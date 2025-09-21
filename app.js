@@ -11,7 +11,39 @@
   const now = () => Date.now();
   const deepClone = obj => JSON.parse(JSON.stringify(obj));
 
+  // Gruvbox Material Color Palette
+  const gruvboxColors = [
+    // Neutral tones
+    '#282828', '#3c3836', '#504945', '#665c54', // darks
+    '#928374', '#a89984', '#bdae93', '#d5c4a1', // grays
+    '#ebdbb2', '#fbf1c7', '#f9f5d7', '#f2e5bc', // lights
+    // Accent colors
+    '#cc241d', '#fb4934', // reds
+    '#d65d0e', '#fe8019', // oranges
+    '#d79921', '#fabd2f', // yellows
+    '#98971a', '#b8bb26', // greens
+    '#689d6a', '#8ec07c', // aquas
+    '#458588', '#83a598', // blues
+    '#b16286', '#d3869b'  // purples
+  ];
+
   function secondsToHMS(sec){ sec = Math.max(0, Math.floor(sec)); const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60; return (h? fmt(h)+':':'')+fmt(m)+':'+fmt(s); }
+
+  // Time conversion helpers
+  function secondsToHoursMinutesSeconds(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return { hours, minutes, seconds };
+  }
+
+  function hoursMinutesSecondsToTotal(hours, minutes, seconds) {
+    return Math.max(0,
+      (parseInt(hours || 0, 10) * 3600) +
+      (parseInt(minutes || 0, 10) * 60) +
+      parseInt(seconds || 0, 10)
+    );
+  }
 
   function getTotalSeconds(blocks){ return blocks.length? blocks[blocks.length-1].atSeconds : 0; }
 
@@ -19,24 +51,198 @@
   const LS_TIMERS = 'cbtimers.v1';
   const LS_PREFS  = 'cbprefs.v1';
   function loadTimers(){ try { return JSON.parse(localStorage.getItem(LS_TIMERS)||'[]'); } catch { return []; } }
-  function saveTimers(list){ localStorage.setItem(LS_TIMERS, JSON.stringify(list)); }
-  function loadPrefs(){ const d = { speak:true, vibrate:false, wake:true, theme:'system' }; try { return Object.assign(d, JSON.parse(localStorage.getItem(LS_PREFS)||'{}')); } catch { return d; } }
-  function savePrefs(p){ localStorage.setItem(LS_PREFS, JSON.stringify(p)); }
+  function saveTimers(list){
+    localStorage.setItem(LS_TIMERS, JSON.stringify(list));
+    // Auto-sync to Firestore if user is signed in
+    if (state.user) {
+      syncToFirestore();
+    }
+  }
+  function loadPrefs(){ const d = { speak:true, vibrate:false, wake:true, theme:'system', onboarded:false }; try { return Object.assign(d, JSON.parse(localStorage.getItem(LS_PREFS)||'{}')); } catch { return d; } }
+  function savePrefs(p){
+    localStorage.setItem(LS_PREFS, JSON.stringify(p));
+    // Auto-sync to Firestore if user is signed in
+    if (state.user) {
+      syncToFirestore();
+    }
+  }
 
-  // -------- Firebase stub (wire later) --------
-  async function initFirebase(){ /*
-    // Example: paste your config then call this and swap storage to Firestore
-    import('https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js').then(async ({ initializeApp })=>{
-      const app = initializeApp(window.__FIREBASE_CONFIG);
-      // ... import auth, firestore and wire into store
+  // -------- Firebase Auth & Sync --------
+  let firebase = null;
+  let isInitialized = false;
+
+  async function initFirebase(){
+    if (isInitialized) return firebase;
+
+    // Wait for Firebase to be available from the module script
+    let attempts = 0;
+    while (!window.firebaseApp && attempts < 50) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+
+    if (!window.firebaseApp) {
+      console.warn('Firebase not available');
+      return null;
+    }
+
+    firebase = window.firebaseApp;
+    isInitialized = true;
+
+    // Set up auth state listener and wait for initial auth check
+    return new Promise((resolve) => {
+      let hasInitiallyResolved = false;
+      firebase.onAuthStateChanged(firebase.auth, (user) => {
+        state.user = user;
+        updateAuthUI();
+        if (user) {
+          // User signed in - sync data
+          syncFromFirestore();
+        }
+        // Resolve on first auth state change (initial check)
+        if (!hasInitiallyResolved) {
+          hasInitiallyResolved = true;
+          resolve(firebase);
+        }
+      });
     });
-  */ }
+  }
+
+  async function signInWithGoogle(){
+    const fb = await initFirebase();
+    if (!fb) return;
+
+    try {
+      const provider = new fb.GoogleAuthProvider();
+      const result = await fb.signInWithPopup(fb.auth, provider);
+      const user = result.user;
+      live(`Signed in as ${user.displayName}`);
+      return user;
+    } catch (error) {
+      console.error('Sign-in error:', error);
+      alert('Sign-in failed: ' + error.message);
+    }
+  }
+
+  async function signOutUser(){
+    const fb = await initFirebase();
+    if (!fb) return;
+
+    try {
+      await fb.signOut(fb.auth);
+      live('Signed out');
+    } catch (error) {
+      console.error('Sign-out error:', error);
+    }
+  }
+
+  async function syncToFirestore(){
+    const fb = await initFirebase();
+    if (!fb || !state.user) return;
+
+    try {
+      const userRef = fb.doc(fb.db, 'users', state.user.uid);
+      await fb.setDoc(userRef, {
+        timers: state.timers,
+        prefs: state.prefs,
+        updatedAt: fb.serverTimestamp()
+      });
+      console.log('Data synced to Firestore');
+    } catch (error) {
+      console.error('Sync to Firestore failed:', error);
+    }
+  }
+
+  async function syncFromFirestore(){
+    const fb = await initFirebase();
+    if (!fb || !state.user) return;
+
+    try {
+      const userRef = fb.doc(fb.db, 'users', state.user.uid);
+      const doc = await fb.getDoc(userRef);
+
+      if (doc.exists()) {
+        const data = doc.data();
+
+        // Merge remote data with local data (local takes precedence for conflicts)
+        if (data.timers && Array.isArray(data.timers)) {
+          const remoteTimers = data.timers;
+          const localTimerIds = new Set(state.timers.map(t => t.id));
+
+          // Add remote timers that don't exist locally
+          for (const remoteTimer of remoteTimers) {
+            if (!localTimerIds.has(remoteTimer.id)) {
+              state.timers.push(remoteTimer);
+            }
+          }
+
+          saveTimers(state.timers);
+          renderList();
+        }
+
+        if (data.prefs) {
+          // Merge preferences (local takes precedence)
+          state.prefs = Object.assign({}, data.prefs, state.prefs);
+          savePrefs(state.prefs);
+        }
+
+        console.log('Data synced from Firestore');
+      }
+    } catch (error) {
+      console.error('Sync from Firestore failed:', error);
+    }
+  }
+
+  function updateAuthUI(){
+    // Header auth button - show after auth check completes
+    const authBtn = byId('authBtn');
+    if (authBtn) {
+      if (state.user) {
+        authBtn.style.display = 'none';
+      } else {
+        authBtn.style.display = 'inline-block';
+        authBtn.textContent = 'Sign In';
+        authBtn.title = 'Sign in with Google to sync across devices';
+        authBtn.onclick = signInWithGoogle;
+      }
+    }
+
+    // Settings page auth controls
+    const authStatus = byId('authStatus');
+    const authActionBtn = byId('authActionBtn');
+    const syncNowBtn = byId('syncNowBtn');
+
+    if (authStatus && authActionBtn) {
+      if (state.user) {
+        authStatus.textContent = `Signed in as ${state.user.displayName || state.user.email}. Your timers sync automatically.`;
+        authActionBtn.textContent = 'Sign Out';
+        authActionBtn.onclick = signOutUser;
+        if (syncNowBtn) {
+          syncNowBtn.style.display = 'inline-block';
+          syncNowBtn.onclick = () => {
+            syncToFirestore();
+            syncFromFirestore();
+            syncNowBtn.textContent = 'Synced!';
+            setTimeout(() => syncNowBtn.textContent = 'Sync Now', 2000);
+          };
+        }
+      } else {
+        authStatus.textContent = 'Sign in to sync your timers across devices';
+        authActionBtn.textContent = 'Sign In with Google';
+        authActionBtn.onclick = signInWithGoogle;
+        if (syncNowBtn) {
+          syncNowBtn.style.display = 'none';
+        }
+      }
+    }
+  }
 
   // -------- App State --------
   const state = {
     timers: loadTimers(),
     prefs: loadPrefs(),
     route: { page: 'list', id:null },
+    user: null,
   };
 
   // Draft timers cache (for unsaved edits)
@@ -50,10 +256,15 @@
     const errors = [];
     const blocks = deepClone(timer.blocks).sort((a,b)=>a.atSeconds-b.atSeconds);
     if (blocks.length===0) errors.push('Add at least one block.');
-    if (blocks[0]?.atSeconds !== 0) errors.push('First block must start at 0 seconds.');
+
+    // Ensure first block always starts at 0
+    if (blocks.length > 0) {
+      blocks[0].atSeconds = 0;
+    }
+
     for(let i=0;i<blocks.length;i++){
       const b = blocks[i];
-      if (b.atSeconds < 0) errors.push(`Block ${i+1}: time cannot be negative.`);
+      if (i > 0 && b.atSeconds < 0) errors.push(`Block ${i+1}: time cannot be negative.`);
       if (!/^#?[0-9A-Fa-f]{6}$/.test(b.colorHex)) errors.push(`Block ${i+1}: invalid color.`);
       if (i>0 && b.atSeconds === blocks[i-1].atSeconds) errors.push(`Duplicate time at ${b.atSeconds}s.`);
       if (i>0 && b.atSeconds < blocks[i-1].atSeconds) errors.push('Blocks must be in ascending time order.');
@@ -87,7 +298,7 @@
       row.className = 'card row'; row.setAttribute('role','listitem'); row.style.textAlign='left';
       row.innerHTML = `
         <div class="stack" style="flex:1">
-          <div style="font-weight:700">${escapeHtml(t.name)}</div>
+          <div class="section-title" style="margin:0">${escapeHtml(t.name)}</div>
           <div class="small muted">${t.blocks.length} block${t.blocks.length>1?'s':''} • ${secondsToHMS(total)}</div>
         </div>
         <div class="row">
@@ -126,22 +337,128 @@
 
     function blockRow(block, idx, tid){
       const row = document.createElement('div'); row.className = 'block-row'; row.dataset.index = idx;
+      const timeData = secondsToHoursMinutesSeconds(block.atSeconds);
+      const isFirstBlock = idx === 0;
+
       row.innerHTML = `
-        <input aria-label="Time (seconds)" type="number" min="0" step="1" value="${block.atSeconds}" />
-        <input aria-label="Color" type="color" value="${normalizeHex(block.colorHex)}" />
-        <input aria-label="Label (optional)" type="text" placeholder="Label" value="${escapeHtml(block.label||'')}" />
-        <button class="btn" title="Remove">✕</button>`;
-      row.children[3].addEventListener('click', ()=>{ const t = state.timers.find(x=>x.id===tid) || timer; const index = +row.dataset.index; t.blocks.splice(index,1); if(t.blocks.length===0) t.blocks.push({atSeconds:0,colorHex:'#FFD400',label:'Start'}); renderEdit(t.id); });
+        <div>
+          <div class="block-row-label">Time</div>
+          <div class="time-input" role="group" aria-label="Timer duration">
+            <input
+              aria-label="Hours"
+              aria-describedby="hours-help-${idx}"
+              type="number"
+              min="0"
+              step="1"
+              value="${timeData.hours}"
+              class="hours-input"
+              title="${isFirstBlock ? 'Start time (always 0:0:0)' : 'Hours (0 or more)'}"
+              ${isFirstBlock ? 'disabled' : ''} />
+            <span class="time-label" id="hours-help-${idx}">H</span>
+            <span class="separator">:</span>
+            <input
+              aria-label="Minutes"
+              aria-describedby="minutes-help-${idx}"
+              type="number"
+              min="0"
+              max="59"
+              step="1"
+              value="${timeData.minutes}"
+              class="minutes-input"
+              title="${isFirstBlock ? 'Start time (always 0:0:0)' : 'Minutes (0-59)'}"
+              ${isFirstBlock ? 'disabled' : ''} />
+            <span class="time-label" id="minutes-help-${idx}">M</span>
+            <span class="separator">:</span>
+            <input
+              aria-label="Seconds"
+              aria-describedby="seconds-help-${idx}"
+              type="number"
+              min="0"
+              max="59"
+              step="1"
+              value="${timeData.seconds}"
+              class="seconds-input"
+              title="${isFirstBlock ? 'Start time (always 0:0:0)' : 'Seconds (0-59)'}"
+              ${isFirstBlock ? 'disabled' : ''} />
+            <span class="time-label" id="seconds-help-${idx}">S</span>
+          </div>
+        </div>
+        <div>
+          <div class="block-row-label">Color</div>
+          <div class="color-selector">
+            <div class="color-preview" style="background-color:${normalizeHex(block.colorHex)}" data-color="${normalizeHex(block.colorHex)}"></div>
+            <div class="color-popover">
+              <div class="color-grid">${gruvboxColors.map(color => `<div class="color-option" style="background-color:${color}" data-color="${color}" title="${color}"></div>`).join('')}</div>
+              <div class="custom-color-row">
+                <span class="small">Custom:</span>
+                <input type="color" class="custom-color-input" value="${normalizeHex(block.colorHex)}">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="block-row-label">Label</div>
+          <input aria-label="Label (optional)" type="text" placeholder="Label (optional)" value="${escapeHtml(block.label||'')}" />
+        </div>
+        <div>
+          <div class="block-row-label">&nbsp;</div>
+          <button class="btn" title="Remove block" ${isFirstBlock ? 'style="display:none"' : ''}>✕</button>
+        </div>`;
+
+      // Set up color selector
+      const colorPreview = row.querySelector('.color-preview');
+      const colorPopover = row.querySelector('.color-popover');
+      const colorOptions = row.querySelectorAll('.color-option');
+      const customColorInput = row.querySelector('.custom-color-input');
+
+      // Toggle popover
+      colorPreview.addEventListener('click', (e) => {
+        e.stopPropagation();
+        colorPopover.classList.toggle('show');
+      });
+
+      // Close popover when clicking outside
+      document.addEventListener('click', () => colorPopover.classList.remove('show'));
+      colorPopover.addEventListener('click', (e) => e.stopPropagation());
+
+      // Handle color selection
+      colorOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          const color = option.dataset.color;
+          colorPreview.style.backgroundColor = color;
+          colorPreview.dataset.color = color;
+          customColorInput.value = color;
+          colorPopover.classList.remove('show');
+        });
+      });
+
+      // Handle custom color input
+      customColorInput.addEventListener('change', () => {
+        const color = customColorInput.value;
+        colorPreview.style.backgroundColor = color;
+        colorPreview.dataset.color = color;
+      });
+
+      row.children[3].querySelector('button').addEventListener('click', ()=>{ const t = state.timers.find(x=>x.id===tid) || timer; const index = +row.dataset.index; t.blocks.splice(index,1); if(t.blocks.length===0) t.blocks.push({atSeconds:0,colorHex:'#FFD400',label:'Start'}); renderEdit(t.id); });
       return row;
     }
 
     function updateFromRows(timer){
       const rows = $$('#blocks .block-row');
-      timer.blocks = rows.map(r=>({
-        atSeconds: Math.max(0, parseInt(r.children[0].value||'0',10)),
-        colorHex: normalizeHex(r.children[1].value||'#000000'),
-        label: r.children[2].value||''
-      }));
+      timer.blocks = rows.map((r, idx)=>{
+        const hoursInput = r.querySelector('.hours-input');
+        const minutesInput = r.querySelector('.minutes-input');
+        const secondsInput = r.querySelector('.seconds-input');
+        const hours = parseInt(hoursInput.value || '0', 10);
+        const minutes = parseInt(minutesInput.value || '0', 10);
+        const seconds = parseInt(secondsInput.value || '0', 10);
+
+        return {
+          atSeconds: idx === 0 ? 0 : hoursMinutesSecondsToTotal(hours, minutes, seconds), // First block always 0
+          colorHex: normalizeHex(r.children[1].querySelector('.color-preview').dataset.color||'#000000'),
+          label: r.children[2].querySelector('input').value||''
+        };
+      });
       timer.updatedAt = now();
     }
   }
@@ -271,17 +588,95 @@
     Engine.toggle(t);
   });
 
-  // Theme toggle btn
-  byId('themeBtn').onclick = ()=>{
-    const order = ['system','light','dark'];
-    const idx = order.indexOf(state.prefs.theme||'system');
-    state.prefs.theme = order[(idx+1)%order.length];
-    savePrefs(state.prefs); setTheme();
-  };
 
   // PWA install prompt (optional best-effort)
   let deferredPrompt=null; window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; byId('installBtn').hidden=false; });
   byId('installBtn').onclick = async ()=>{ try{ await deferredPrompt.prompt(); }catch{} };
+
+  // -------- Onboarding --------
+  let selectedTheme = null;
+  let currentOnboardingStep = 1;
+
+  function showOnboardingStep(step) {
+    // Hide all steps
+    for (let i = 1; i <= 4; i++) {
+      const stepEl = byId(`onboarding-step-${i}`);
+      if (stepEl) stepEl.style.display = 'none';
+    }
+    // Show current step
+    const currentStep = byId(`onboarding-step-${step}`);
+    if (currentStep) currentStep.style.display = 'block';
+    currentOnboardingStep = step;
+  }
+
+  function initOnboarding() {
+    // Theme selection
+    $$('.theme-option').forEach(option => {
+      option.addEventListener('click', () => {
+        // Remove previous selection
+        $$('.theme-option').forEach(opt => opt.classList.remove('selected'));
+        // Select current
+        option.classList.add('selected');
+        selectedTheme = option.dataset.theme;
+        // Apply theme immediately for preview
+        setTheme(selectedTheme);
+        // Enable continue button
+        byId('onboarding-continue-1').disabled = false;
+      });
+    });
+
+    // Step 1: Theme selection
+    byId('onboarding-continue-1').addEventListener('click', () => {
+      if (selectedTheme) {
+        state.prefs.theme = selectedTheme;
+        savePrefs(state.prefs);
+        showOnboardingStep(2);
+      }
+    });
+
+    // Step 2: App explanation
+    byId('onboarding-back-2').addEventListener('click', () => showOnboardingStep(1));
+    byId('onboarding-continue-2').addEventListener('click', () => showOnboardingStep(3));
+
+    // Step 3: Google sign-in
+    byId('onboarding-back-3').addEventListener('click', () => showOnboardingStep(2));
+    byId('onboarding-skip-signin').addEventListener('click', () => {
+      completeOnboarding();
+    });
+    byId('onboarding-signin').addEventListener('click', async () => {
+      try {
+        const firebase = window.firebaseApp;
+        const provider = new firebase.GoogleAuthProvider();
+        const result = await firebase.signInWithPopup(firebase.auth, provider);
+        if (result.user) {
+          live('Successfully signed in with Google');
+          showOnboardingStep(4);
+        }
+      } catch (error) {
+        console.error('Sign-in error:', error);
+        alert('Sign-in failed. You can try again later from Settings.');
+        completeOnboarding();
+      }
+    });
+
+    // Step 4: Completion
+    byId('onboarding-finish').addEventListener('click', () => {
+      completeOnboarding();
+    });
+
+    // Start with step 1
+    showOnboardingStep(1);
+  }
+
+  function completeOnboarding() {
+    state.prefs.onboarded = true;
+    savePrefs(state.prefs);
+    // Sync to Firestore if user is signed in
+    if (state.user) {
+      syncToFirestore();
+    }
+    go('list');
+  }
 
   // -------- Page switcher --------
   function show(pageId){ $$('.page').forEach(p=>p.classList.remove('active')); byId('page-'+pageId).classList.add('active'); }
@@ -289,6 +684,15 @@
   function render(){
     state.route = parseHash();
     setTheme(state.prefs.theme);
+    updateAuthUI();
+
+    // Check if user needs onboarding
+    if (!state.prefs.onboarded) {
+      show('onboarding');
+      initOnboarding();
+      return;
+    }
+
     if(state.route.page==='list'){ show('list'); renderList(); }
     else if(state.route.page==='edit'){ show('edit'); renderEdit(state.route.id); }
     else if(state.route.page==='run'){
@@ -299,7 +703,64 @@
     else { go('list'); }
   }
 
-  // Init
-  render();
+  // Init Firebase first, then render after auth check
+  async function init(){
+    const loadingScreen = byId('loadingScreen');
+    const startTime = now();
+    let showLoadingScreen = false;
+
+    // Hide loading screen initially
+    if (loadingScreen) {
+      loadingScreen.style.display = 'none';
+    }
+
+    // Show loading screen after 120ms if still loading
+    const loadingTimeout = setTimeout(() => {
+      if (loadingScreen) {
+        loadingScreen.style.display = 'flex';
+        showLoadingScreen = true;
+      }
+    }, 120);
+
+    try {
+      // Load data and initialize Firebase
+      await initFirebase();
+
+      // Clear the loading timeout since we're done
+      clearTimeout(loadingTimeout);
+
+      // If loading screen was shown, wait for animation to complete
+      if (showLoadingScreen) {
+        const elapsed = now() - startTime;
+        const minLoadTime = 10; // 0.01 seconds (10ms)
+        const animationDuration = 10; // 0.01 seconds for the progress bar
+        const totalWaitTime = Math.max(minLoadTime, animationDuration);
+
+        if (elapsed < totalWaitTime) {
+          await new Promise(resolve => setTimeout(resolve, totalWaitTime - elapsed));
+        }
+
+        // Hide loading screen
+        if (loadingScreen) {
+          loadingScreen.classList.add('hide');
+          setTimeout(() => loadingScreen.style.display = 'none', 300);
+        }
+      }
+
+      render();
+    } catch (error) {
+      console.error('Initialization failed:', error);
+      clearTimeout(loadingTimeout);
+
+      // If loading screen was shown, hide it
+      if (showLoadingScreen && loadingScreen) {
+        loadingScreen.classList.add('hide');
+        setTimeout(() => loadingScreen.style.display = 'none', 300);
+      }
+
+      render(); // Still try to render the app
+    }
+  }
+  init();
 
 })();
