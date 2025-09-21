@@ -584,12 +584,12 @@
         padding: 0 !important;
       }
 
-      /* SIMPLE 100VH LAYOUT WITH HARDCODED HEIGHTS */
+      /* FLEXIBLE MOBILE LAYOUT */
       #page-onboarding {
-        height: 100vh !important;
+        min-height: 100vh !important;
         display: flex !important;
         flex-direction: column !important;
-        overflow: hidden !important;
+        overflow-y: auto !important;
       }
 
       /* Header - 4rem fixed */
@@ -604,11 +604,10 @@
         box-sizing: border-box !important;
       }
 
-      /* Copy section - 8rem fixed */
+      /* Flexible header section */
       .onboarding-container {
-        height: 8rem !important;
         flex-shrink: 0 !important;
-        padding: 1rem 2.5% !important;
+        padding: 1rem 2.5% 0.5rem 2.5% !important;
         text-align: center !important;
         background: var(--bg) !important;
         box-sizing: border-box !important;
@@ -639,29 +638,17 @@
 
       /* SCROLLABLE THEME CONTAINER - calc(100vh - 16rem) */
       .theme-grid {
-        height: calc(100vh - 16rem) !important;
+        flex: 1 !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
         display: flex !important;
         flex-direction: column !important;
         gap: 12px !important;
-        padding: 1rem 2.5% !important;
+        padding: 1rem 2.5% 2rem 2.5% !important;
         margin: 0 !important;
         box-sizing: border-box !important;
       }
 
-      /* Continue button - 4rem fixed at bottom */
-      .onboarding-actions {
-        height: 4rem !important;
-        flex-shrink: 0 !important;
-        padding: 0 2.5% !important;
-        background: var(--bg) !important;
-        border-top: 1px solid var(--border) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-sizing: border-box !important;
-      }
 
       /* Theme options styling */
       div.theme-option {
@@ -701,9 +688,11 @@
       .onboarding-actions .btn {
         width: 100% !important;
         max-width: 400px !important;
-        padding: 0.75rem !important;
+        padding: 1rem !important;
         font-size: 1rem !important;
+        min-height: 44px !important;
         box-sizing: border-box !important;
+        touch-action: manipulation !important;
       }
     }
   </style>
