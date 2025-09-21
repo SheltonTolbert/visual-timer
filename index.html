@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Color‑Block Timer</title>
+  <title>Time Box</title>
   <style>
     :root{
       /* Gruvbox Material Dark Theme */
@@ -109,6 +109,15 @@
     /* Simple tabs/pages */
     .page{display:none}
     .page.active{display:block}
+
+    /* Completely hide list page during onboarding */
+    body:not(.onboarded) #page-list {
+      display: none !important;
+      visibility: hidden !important;
+      position: absolute !important;
+      left: -9999px !important;
+    }
+
 
     /* Table-like rows for blocks */
     .blocks{display:grid;gap:12px}
@@ -711,7 +720,7 @@
 
   <div class="app">
     <header>
-      <h1>Color‑Block Timer <span class="muted small">MVP</span></h1>
+      <h1>Time Box</h1>
       <nav class="toolbar" aria-label="Top toolbar">
         <button class="btn btn-icon" id="authBtn" title="Sign in with Google" aria-label="Sign in with Google">
           <span>👤</span>
@@ -726,7 +735,7 @@
     </header>
 
     <!-- Page: List -->
-    <section id="page-list" class="page active">
+    <section id="page-list" class="page">
       <div class="row" style="margin-top:16px">
         <div class="stack" style="flex:1">
           <div class="muted">Your timers</div>
@@ -738,7 +747,7 @@
       <div id="emptyState" class="card" style="display:none">
         <div class="stack">
           <div><strong>No timers yet.</strong></div>
-          <div class="muted small">Create your first timer with color blocks that change at specific times (e.g. 0s yellow, 300s green, 560s blue, 600s red).</div>
+          <div class="muted small">Create your first timer with time blocks that change at specific times (e.g. 0s yellow, 300s green, 560s blue, 600s red).</div>
           <div><button class="btn primary" id="createSampleBtn">Create sample Pomodoro</button></div>
         </div>
       </div>
@@ -804,7 +813,7 @@
       <div class="onboarding-container">
         <div class="onboarding-step" id="onboarding-step-1">
           <div class="onboarding-header">
-            <h2>Welcome to Color‑Block Timer!</h2>
+            <h2>Welcome to Time Box!</h2>
             <p>Let's get you started with a quick setup.</p>
           </div>
 
@@ -857,12 +866,12 @@
 
         <div class="onboarding-step" id="onboarding-step-2" style="display:none">
           <div class="onboarding-content">
-            <h2>How Color‑Block Timer Works</h2>
+            <h2>How Time Box Works</h2>
             <div class="features-grid">
               <div class="feature">
                 <div class="feature-icon">⏱️</div>
                 <h3>Create Custom Timers</h3>
-                <p>Build timers with color blocks that change at specific times. Perfect for Pomodoro, workouts, presentations, or any timed activity.</p>
+                <p>Build timers with time blocks that change at specific times. Perfect for Pomodoro, workouts, presentations, or any timed activity.</p>
               </div>
               <div class="feature">
                 <div class="feature-icon">🎨</div>
@@ -909,7 +918,7 @@
             <h2>You're All Set!</h2>
             <div class="completion-message">
               <div class="completion-icon">🎉</div>
-              <p>Your Color‑Block Timer is ready to use.</p>
+              <p>Your Time Box is ready to use.</p>
               <div class="quick-tips">
                 <h3>Quick Tips:</h3>
                 <ul>
@@ -921,7 +930,7 @@
               </div>
             </div>
             <div class="onboarding-actions">
-              <button class="btn primary" id="onboarding-finish">Start Using Color‑Block Timer</button>
+              <button class="btn primary" id="onboarding-finish">Start Using Time Box</button>
             </div>
           </div>
         </div>

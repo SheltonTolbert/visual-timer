@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:firebase.google.com)",
+      "WebFetch(domain:github.com)",
+      "mcp__browser-mcp__browser_screenshot",
+      "mcp__browser-mcp__browser_click",
+      "mcp__browser-mcp__browser_snapshot",
+      "mcp__browser-mcp__browser_select_option",
+      "mcp__browser-mcp__browser_press_key",
+      "mcp__browser-mcp__browser_navigate",
+      "mcp__browser-mcp__browser_get_console_logs"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

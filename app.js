@@ -177,7 +177,10 @@
           }
 
           saveTimers(state.timers);
-          renderList();
+          // Only render list if we're not in onboarding
+          if (state.prefs.onboarded) {
+            renderList();
+          }
         }
 
         if (data.prefs) {
@@ -248,8 +251,7 @@
   // Draft timers cache (for unsaved edits)
   const drafts = {};
 
-  // Seed sample if empty
-  if(state.timers.length === 0){ byId('emptyState').style.display = 'block'; }
+  // Empty state handled by renderList() function
 
   // -------- Validation --------
   function validateTimer(timer){
@@ -273,9 +275,23 @@
   }
 
   // -------- Router --------
-  function go(page, id){ state.route = { page, id: id||null }; location.hash = '#/'+page + (id?('/'+id):''); }
+  function go(page, id){
+    console.log('go() called with:', page, id);
+    console.trace('go() stack trace');
+    state.route = { page, id: id||null };
+    location.hash = '#/'+page + (id?('/'+id):'');
+  }
   function parseHash(){ const h = location.hash.slice(2).split('/'); const page = h[0]||'list'; const id = h[1]||null; return { page, id } }
-  window.addEventListener('hashchange', render);
+  // Only add hashchange listener if user is onboarded
+  function addHashListener() {
+    window.addEventListener('hashchange', render);
+  }
+
+  // Add listener conditionally and set body class
+  if (state.prefs.onboarded) {
+    addHashListener();
+    document.body.classList.add('onboarded');
+  }
 
   // -------- Render --------
   function setTheme(theme){
@@ -288,9 +304,20 @@
   }
 
   function renderList(){
+    // Don't render list at all if user is not onboarded
+    if (!state.prefs.onboarded) {
+      return;
+    }
+
     const listEl = byId('timerList'); listEl.innerHTML = '';
     const timers = state.timers.slice().sort((a,b)=> a.name.localeCompare(b.name));
-    if (timers.length===0){ byId('emptyState').style.display = 'block'; return; }
+    if (timers.length===0){
+      // Only show empty state if user is onboarded (not in onboarding flow)
+      if (state.prefs.onboarded) {
+        byId('emptyState').style.display = 'block';
+      }
+      return;
+    }
     byId('emptyState').style.display = 'none';
     for (const t of timers){
       const total = getTotalSeconds(t.blocks);
@@ -671,27 +698,78 @@
   function completeOnboarding() {
     state.prefs.onboarded = true;
     savePrefs(state.prefs);
+    // Add onboarded class to body for CSS
+    document.body.classList.add('onboarded');
     // Sync to Firestore if user is signed in
     if (state.user) {
       syncToFirestore();
     }
+    // Now that user is onboarded, add hash listener
+    addHashListener();
     go('list');
   }
 
   // -------- Page switcher --------
-  function show(pageId){ $$('.page').forEach(p=>p.classList.remove('active')); byId('page-'+pageId).classList.add('active'); }
+  let isShowingPage = false;
+  function show(pageId){
+    // Prevent overlapping calls
+    if (isShowingPage) {
+      setTimeout(() => show(pageId), 10);
+      return;
+    }
+    isShowingPage = true;
+
+    // If user hasn't completed onboarding, force onboarding page
+    if (!state.prefs.onboarded && pageId !== 'onboarding') {
+      pageId = 'onboarding';
+    }
+
+    // Always hide all pages first - do this more aggressively
+    const allPages = $$('.page');
+    allPages.forEach(p => {
+      p.classList.remove('active');
+    });
+
+    // Small delay to ensure DOM updates complete
+    setTimeout(() => {
+      // Show the requested page
+      byId('page-'+pageId).classList.add('active');
+      isShowingPage = false;
+    }, 1);
+  }
 
   function render(){
+    // If user is not onboarded, ONLY show onboarding and exit
+    if (!state.prefs.onboarded) {
+      // Completely reset all page visibility
+      $$('.page').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = 'none !important';
+      });
+
+      // Show only onboarding page
+      const onboardingPage = byId('page-onboarding');
+      onboardingPage.classList.add('active');
+      onboardingPage.style.display = 'block';
+      onboardingPage.style.visibility = 'visible';
+
+      // Initialize onboarding
+      initOnboarding();
+
+      // Prevent any further render logic
+      return;
+    }
+
+    // Reset any onboarding-specific styling for onboarded users
+    $$('.page').forEach(p => {
+      p.style.display = '';
+      p.style.visibility = '';
+    });
+
+    // Normal render logic for onboarded users
     state.route = parseHash();
     setTheme(state.prefs.theme);
     updateAuthUI();
-
-    // Check if user needs onboarding
-    if (!state.prefs.onboarded) {
-      show('onboarding');
-      initOnboarding();
-      return;
-    }
 
     if(state.route.page==='list'){ show('list'); renderList(); }
     else if(state.route.page==='edit'){ show('edit'); renderEdit(state.route.id); }
