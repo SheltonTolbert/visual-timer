@@ -570,129 +570,171 @@
       }
     }
 
-    /* MOBILE FLEX LAYOUT - Proper structure with sticky elements */
+    /* CSS GRID LAYOUT - Reliable mobile-first approach */
     @media screen and (max-width: 1000px) {
       html, body {
-        height: 100% !important;
-        overflow-x: hidden !important;
+        height: 100%;
+        overflow-x: hidden;
       }
 
       .app {
-        height: 100% !important;
-        overflow-x: hidden !important;
-        max-width: 100% !important;
-        padding: 0 !important;
+        height: 100%;
+        overflow-x: hidden;
+        max-width: 100%;
+        padding: 0;
       }
 
-      /* FLEXIBLE MOBILE LAYOUT */
-      #page-onboarding {
-        min-height: 100vh !important;
-        display: flex !important;
-        flex-direction: column !important;
-        overflow-y: auto !important;
+      /* MAIN GRID CONTAINER */
+      .onboarding-step {
+        height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        grid-template-areas:
+          "header"
+          "content"
+          "actions";
+        overflow: hidden;
       }
 
-      /* Header - 4rem fixed */
-      header {
-        height: 4rem !important;
-        flex-shrink: 0 !important;
-        padding: 0 2.5% !important;
-        background: var(--bg) !important;
-        border-bottom: 1px solid var(--border) !important;
-        display: flex !important;
-        align-items: center !important;
-        box-sizing: border-box !important;
+      /* GRID AREA 1: HEADER */
+      .onboarding-step .onboarding-header {
+        grid-area: header;
+        padding: 1rem 5% 0.5rem 5%;
+        text-align: center;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
       }
 
-      /* Flexible header section */
-      .onboarding-container {
-        flex-shrink: 0 !important;
-        padding: 1rem 2.5% 0.5rem 2.5% !important;
-        text-align: center !important;
-        background: var(--bg) !important;
-        box-sizing: border-box !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
+      .onboarding-step .onboarding-header h2 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.5rem;
       }
 
-      .onboarding-container h2 {
-        margin: 0 0 0.5rem 0 !important;
-        font-size: 1.5rem !important;
+      .onboarding-step .onboarding-header p {
+        margin: 0;
+        font-size: 1rem;
+        color: var(--muted);
       }
 
-      .onboarding-container p {
-        margin: 0 0 1rem 0 !important;
-        font-size: 1rem !important;
+      /* GRID AREA 2: SCROLLABLE CONTENT */
+      .onboarding-step .onboarding-content-area {
+        grid-area: content;
+        overflow-y: auto;
+        padding: 1rem 5%;
+        background: var(--bg);
       }
 
-      .onboarding-container h3 {
-        margin: 0 0 0.25rem 0 !important;
-        font-size: 1.2rem !important;
+      .onboarding-step .onboarding-description h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.2rem;
+        text-align: center;
       }
 
-      .onboarding-container .muted {
-        margin: 0 !important;
-        font-size: 0.9rem !important;
+      .onboarding-step .onboarding-description p {
+        margin: 0 0 1.5rem 0;
+        text-align: center;
+        color: var(--muted);
       }
 
-      /* SCROLLABLE THEME CONTAINER - calc(100vh - 16rem) */
+      /* Theme grid styling */
       .theme-grid {
-        flex: 1 !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 12px !important;
-        padding: 1rem 2.5% 2rem 2.5% !important;
-        margin: 0 !important;
-        box-sizing: border-box !important;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: none;
       }
 
-
-      /* Theme options styling */
-      div.theme-option {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 16px !important;
-        text-align: left !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        flex-shrink: 0 !important;
+      .theme-option {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        cursor: pointer;
+        background: var(--card);
       }
 
-      div.theme-preview {
-        width: 60px !important;
-        height: 40px !important;
-        flex-shrink: 0 !important;
-        margin: 0 !important;
+      .theme-option.selected {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: var(--bg);
       }
 
-      div.theme-option span {
-        flex: 1 !important;
-        text-align: left !important;
-        font-size: 1rem !important;
+      .theme-preview {
+        width: 60px;
+        height: 40px;
+        border-radius: 4px;
+        flex-shrink: 0;
       }
 
-      /* Continue button - fixed height at bottom */
-      .onboarding-actions {
-        flex: 0 0 auto !important;
-        padding: 16px 2.5% !important;
-        background: var(--bg) !important;
-        border-top: 1px solid var(--border) !important;
-        display: flex !important;
-        justify-content: center !important;
+      .theme-option span {
+        flex: 1;
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      /* Features grid for step 2 */
+      .features-grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: 1fr;
+      }
+
+      .feature {
+        padding: 1rem;
+        background: var(--card);
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      /* GRID AREA 3: ALWAYS-VISIBLE ACTIONS */
+      .onboarding-step .onboarding-actions {
+        grid-area: actions;
+        padding: 1rem 5%;
+        background: var(--bg);
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        align-items: center;
       }
 
       .onboarding-actions .btn {
-        width: 100% !important;
-        max-width: 400px !important;
-        padding: 1rem !important;
-        font-size: 1rem !important;
-        min-height: 44px !important;
-        box-sizing: border-box !important;
-        touch-action: manipulation !important;
+        flex: 1;
+        max-width: 200px;
+        min-height: 44px;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        touch-action: manipulation;
+        box-sizing: border-box;
+      }
+
+      /* Hide non-active onboarding steps */
+      .onboarding-step[style*="display:none"] {
+        display: none;
+      }
+
+      /* Additional content styling */
+      .sync-explanation, .completion-message {
+        text-align: center;
+      }
+
+      .completion-icon {
+        font-size: 3rem;
+        margin: 1rem 0;
+      }
+
+      .sync-benefits ul, .quick-tips ul {
+        text-align: left;
+        max-width: 500px;
+        margin: 1rem auto;
+      }
+
+      .sync-benefits li, .quick-tips li {
+        margin: 0.5rem 0;
+        line-height: 1.4;
       }
     }
   </style>
@@ -799,130 +841,153 @@
 
     <!-- Page: Onboarding -->
     <section id="page-onboarding" class="page">
-      <div class="onboarding-container">
-        <div class="onboarding-step" id="onboarding-step-1">
-          <div class="onboarding-header">
-            <h2>Welcome to Time Box!</h2>
-            <p>Let's get you started with a quick setup.</p>
-          </div>
+      <div class="onboarding-step" id="onboarding-step-1">
+        <!-- Grid Area: Header -->
+        <div class="onboarding-header">
+          <h2>Welcome to Time Box!</h2>
+          <p>Let's get you started with a quick setup.</p>
+        </div>
 
+        <!-- Grid Area: Content -->
+        <div class="onboarding-content-area">
           <div class="onboarding-description">
             <h3>Choose Your Theme</h3>
             <p>You can change this anytime in Settings.</p>
           </div>
 
-          <div class="onboarding-themes">
-            <div class="theme-grid">
-              <div class="theme-option" data-theme="dark">
-                <div class="theme-preview gruvbox-dark"></div>
-                <span>Dark (Gruvbox)</span>
-              </div>
-              <div class="theme-option" data-theme="light">
-                <div class="theme-preview gruvbox-light"></div>
-                <span>Light (Gruvbox)</span>
-              </div>
-              <div class="theme-option" data-theme="nord">
-                <div class="theme-preview nord-dark"></div>
-                <span>Nord Dark</span>
-              </div>
-              <div class="theme-option" data-theme="nord-light">
-                <div class="theme-preview nord-light"></div>
-                <span>Nord Light</span>
-              </div>
-              <div class="theme-option" data-theme="dracula">
-                <div class="theme-preview dracula"></div>
-                <span>Dracula</span>
-              </div>
-              <div class="theme-option" data-theme="tokyo-night">
-                <div class="theme-preview tokyo-night"></div>
-                <span>Tokyo Night</span>
-              </div>
-              <div class="theme-option" data-theme="high-contrast-dark">
-                <div class="theme-preview high-contrast-dark"></div>
-                <span>High Contrast Dark</span>
-              </div>
-              <div class="theme-option" data-theme="high-contrast-light">
-                <div class="theme-preview high-contrast-light"></div>
-                <span>High Contrast Light</span>
-              </div>
+          <div class="theme-grid">
+            <div class="theme-option" data-theme="dark">
+              <div class="theme-preview gruvbox-dark"></div>
+              <span>Dark (Gruvbox)</span>
             </div>
-          </div>
-
-          <div class="onboarding-actions">
-            <button class="btn primary" id="onboarding-continue-1" disabled>Continue</button>
-          </div>
-        </div>
-
-        <div class="onboarding-step" id="onboarding-step-2" style="display:none">
-          <div class="onboarding-content">
-            <h2>How Time Box Works</h2>
-            <div class="features-grid">
-              <div class="feature">
-                <div class="feature-icon">⏱️</div>
-                <h3>Create Custom Timers</h3>
-                <p>Build timers with time blocks that change at specific times. Perfect for Pomodoro, workouts, presentations, or any timed activity.</p>
-              </div>
-              <div class="feature">
-                <div class="feature-icon">🎨</div>
-                <h3>Visual Time Blocks</h3>
-                <p>Each timer shows different colors at different times. Green for focus, yellow for break, red for finish - you decide!</p>
-              </div>
-              <div class="feature">
-                <div class="feature-icon">📱</div>
-                <h3>Full-Screen Experience</h3>
-                <p>Run timers in full-screen mode with large, clear color displays. Great for visibility across rooms or during presentations.</p>
-              </div>
+            <div class="theme-option" data-theme="light">
+              <div class="theme-preview gruvbox-light"></div>
+              <span>Light (Gruvbox)</span>
             </div>
-            <div class="onboarding-actions">
-              <button class="btn ghost" id="onboarding-back-2">← Back</button>
-              <button class="btn primary" id="onboarding-continue-2">Continue</button>
+            <div class="theme-option" data-theme="nord">
+              <div class="theme-preview nord-dark"></div>
+              <span>Nord Dark</span>
+            </div>
+            <div class="theme-option" data-theme="nord-light">
+              <div class="theme-preview nord-light"></div>
+              <span>Nord Light</span>
+            </div>
+            <div class="theme-option" data-theme="dracula">
+              <div class="theme-preview dracula"></div>
+              <span>Dracula</span>
+            </div>
+            <div class="theme-option" data-theme="tokyo-night">
+              <div class="theme-preview tokyo-night"></div>
+              <span>Tokyo Night</span>
+            </div>
+            <div class="theme-option" data-theme="high-contrast-dark">
+              <div class="theme-preview high-contrast-dark"></div>
+              <span>High Contrast Dark</span>
+            </div>
+            <div class="theme-option" data-theme="high-contrast-light">
+              <div class="theme-preview high-contrast-light"></div>
+              <span>High Contrast Light</span>
             </div>
           </div>
         </div>
 
-        <div class="onboarding-step" id="onboarding-step-3" style="display:none">
-          <div class="onboarding-content">
-            <h2>Sync Your Timers (Optional)</h2>
-            <div class="sync-explanation">
-              <div class="sync-benefits">
-                <h3>Sign in with Google to:</h3>
-                <ul>
-                  <li><strong>Sync across devices</strong> - Access your timers on phone, tablet, and desktop</li>
-                  <li><strong>Never lose your work</strong> - Automatic cloud backup of all your timers</li>
-                  <li><strong>Share between devices</strong> - Create on desktop, run on mobile</li>
-                </ul>
-                <p class="muted small">Your timers work great offline too! You can always sign in later from Settings.</p>
-              </div>
+        <!-- Grid Area: Actions -->
+        <div class="onboarding-actions">
+          <button class="btn primary" id="onboarding-continue-1" disabled>Continue</button>
+        </div>
+      </div>
+
+      <div class="onboarding-step" id="onboarding-step-2" style="display:none">
+        <!-- Grid Area: Header -->
+        <div class="onboarding-header">
+          <h2>How Time Box Works</h2>
+        </div>
+
+        <!-- Grid Area: Content -->
+        <div class="onboarding-content-area">
+          <div class="features-grid">
+            <div class="feature">
+              <div class="feature-icon">⏱️</div>
+              <h3>Create Custom Timers</h3>
+              <p>Build timers with time blocks that change at specific times. Perfect for Pomodoro, workouts, presentations, or any timed activity.</p>
             </div>
-            <div class="onboarding-actions">
-              <button class="btn ghost" id="onboarding-back-3">← Back</button>
-              <button class="btn" id="onboarding-skip-signin">Skip for now</button>
-              <button class="btn primary" id="onboarding-signin">Sign In with Google</button>
+            <div class="feature">
+              <div class="feature-icon">🎨</div>
+              <h3>Visual Time Blocks</h3>
+              <p>Each timer shows different colors at different times. Green for focus, yellow for break, red for finish - you decide!</p>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">📱</div>
+              <h3>Full-Screen Experience</h3>
+              <p>Run timers in full-screen mode with large, clear color displays. Great for visibility across rooms or during presentations.</p>
             </div>
           </div>
         </div>
 
-        <div class="onboarding-step" id="onboarding-step-4" style="display:none">
-          <div class="onboarding-content">
-            <h2>You're All Set!</h2>
-            <div class="completion-message">
-              <div class="completion-icon">🎉</div>
-              <p>Your Time Box is ready to use.</p>
-              <div class="quick-tips">
-                <h3>Quick Tips:</h3>
-                <ul>
-                  <li>Click "Add Timer" to create your first custom timer</li>
-                  <li>Try the sample Pomodoro timer to get started</li>
-                  <li>Click any timer to run it full-screen</li>
-                  <li>Access Settings anytime from the gear icon ⚙️</li>
-                </ul>
-              </div>
-            </div>
-            <div class="onboarding-actions">
-              <button class="btn primary" id="onboarding-finish">Start Using Time Box</button>
+        <!-- Grid Area: Actions -->
+        <div class="onboarding-actions">
+          <button class="btn ghost" id="onboarding-back-2">← Back</button>
+          <button class="btn primary" id="onboarding-continue-2">Continue</button>
+        </div>
+      </div>
+
+      <div class="onboarding-step" id="onboarding-step-3" style="display:none">
+        <!-- Grid Area: Header -->
+        <div class="onboarding-header">
+          <h2>Sync Your Timers (Optional)</h2>
+        </div>
+
+        <!-- Grid Area: Content -->
+        <div class="onboarding-content-area">
+          <div class="sync-explanation">
+            <div class="sync-benefits">
+              <h3>Sign in with Google to:</h3>
+              <ul>
+                <li><strong>Sync across devices</strong> - Access your timers on phone, tablet, and desktop</li>
+                <li><strong>Never lose your work</strong> - Automatic cloud backup of all your timers</li>
+                <li><strong>Share between devices</strong> - Create on desktop, run on mobile</li>
+              </ul>
+              <p class="muted small">Your timers work great offline too! You can always sign in later from Settings.</p>
             </div>
           </div>
         </div>
+
+        <!-- Grid Area: Actions -->
+        <div class="onboarding-actions">
+          <button class="btn ghost" id="onboarding-back-3">← Back</button>
+          <button class="btn" id="onboarding-skip-signin">Skip for now</button>
+          <button class="btn primary" id="onboarding-signin">Sign In with Google</button>
+        </div>
+      </div>
+
+      <div class="onboarding-step" id="onboarding-step-4" style="display:none">
+        <!-- Grid Area: Header -->
+        <div class="onboarding-header">
+          <h2>You're All Set!</h2>
+        </div>
+
+        <!-- Grid Area: Content -->
+        <div class="onboarding-content-area">
+          <div class="completion-message">
+            <div class="completion-icon">🎉</div>
+            <p>Your Time Box is ready to use.</p>
+            <div class="quick-tips">
+              <h3>Quick Tips:</h3>
+              <ul>
+                <li>Click "Add Timer" to create your first custom timer</li>
+                <li>Try the sample Pomodoro timer to get started</li>
+                <li>Click any timer to run it full-screen</li>
+                <li>Access Settings anytime from the gear icon ⚙️</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid Area: Actions -->
+        <div class="onboarding-actions">
+          <button class="btn primary" id="onboarding-finish">Start Using Time Box</button>
+        </div>
+      </div>
       </div>
     </section>
 
