@@ -10,7 +10,8 @@
       "mcp__browser-mcp__browser_select_option",
       "mcp__browser-mcp__browser_press_key",
       "mcp__browser-mcp__browser_navigate",
-      "mcp__browser-mcp__browser_get_console_logs"
+      "mcp__browser-mcp__browser_get_console_logs",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

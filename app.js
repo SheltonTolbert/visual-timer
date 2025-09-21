@@ -621,12 +621,11 @@
   byId('installBtn').onclick = async ()=>{ try{ await deferredPrompt.prompt(); }catch{} };
 
   // -------- Onboarding --------
-  let selectedTheme = null;
   let currentOnboardingStep = 1;
 
   function showOnboardingStep(step) {
     // Hide all steps
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 3; i++) {
       const stepEl = byId(`onboarding-step-${i}`);
       if (stepEl) stepEl.style.display = 'none';
     }
@@ -637,36 +636,13 @@
   }
 
   function initOnboarding() {
-    // Theme selection
-    $$('.theme-option').forEach(option => {
-      option.addEventListener('click', () => {
-        // Remove previous selection
-        $$('.theme-option').forEach(opt => opt.classList.remove('selected'));
-        // Select current
-        option.classList.add('selected');
-        selectedTheme = option.dataset.theme;
-        // Apply theme immediately for preview
-        setTheme(selectedTheme);
-        // Enable continue button
-        byId('onboarding-continue-1').disabled = false;
-      });
-    });
-
-    // Step 1: Theme selection
+    // Step 1: Welcome/Features
     byId('onboarding-continue-1').addEventListener('click', () => {
-      if (selectedTheme) {
-        state.prefs.theme = selectedTheme;
-        savePrefs(state.prefs);
-        showOnboardingStep(2);
-      }
+      showOnboardingStep(2);
     });
 
-    // Step 2: App explanation
+    // Step 2: Google sign-in
     byId('onboarding-back-2').addEventListener('click', () => showOnboardingStep(1));
-    byId('onboarding-continue-2').addEventListener('click', () => showOnboardingStep(3));
-
-    // Step 3: Google sign-in
-    byId('onboarding-back-3').addEventListener('click', () => showOnboardingStep(2));
     byId('onboarding-skip-signin').addEventListener('click', () => {
       completeOnboarding();
     });
@@ -677,7 +653,7 @@
         const result = await firebase.signInWithPopup(firebase.auth, provider);
         if (result.user) {
           live('Successfully signed in with Google');
-          showOnboardingStep(4);
+          showOnboardingStep(3);
         }
       } catch (error) {
         console.error('Sign-in error:', error);
@@ -686,7 +662,7 @@
       }
     });
 
-    // Step 4: Completion
+    // Step 3: Completion
     byId('onboarding-finish').addEventListener('click', () => {
       completeOnboarding();
     });
