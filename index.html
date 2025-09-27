@@ -1,1036 +1,1579 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Time Box</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Time Box</title>
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="favicon-192x192.png">
-  <link rel="manifest" href="manifest.json">
-  <style>
-    :root{
-      /* Gruvbox Material Dark Theme */
-      --bg: #282828; --fg: #fbf1c7; --muted: #928374; --card: #3c3836; --accent: #83a598; --danger: #fb4934; --ok: #b8bb26;
-      --focus: #fabd2f; --border: #504945;
-    }
-    [data-theme="light"]{
-      /* Gruvbox Material Light Theme */
-      --bg: #fbf1c7; --fg: #282828; --muted: #7c6f64; --card: #f2e5bc; --accent: #458588; --danger: #cc241d; --ok: #98971a; --border: #d5c4a1; --focus: #d79921;
-    }
-    [data-theme="nord"]{
-      /* Nord Dark Theme */
-      --bg: #2e3440; --fg: #eceff4; --muted: #616e88; --card: #3b4252; --accent: #81a1c1; --danger: #bf616a; --ok: #a3be8c; --border: #4c566a; --focus: #ebcb8b;
-    }
-    [data-theme="nord-light"]{
-      /* Nord Light Theme */
-      --bg: #eceff4; --fg: #2e3440; --muted: #5e81ac; --card: #e5e9f0; --accent: #5e81ac; --danger: #bf616a; --ok: #a3be8c; --border: #d8dee9; --focus: #ebcb8b;
-    }
-    [data-theme="dracula"]{
-      /* Dracula Dark Theme */
-      --bg: #282a36; --fg: #f8f8f2; --muted: #6272a4; --card: #44475a; --accent: #bd93f9; --danger: #ff5555; --ok: #50fa7b; --border: #6272a4; --focus: #f1fa8c;
-    }
-    [data-theme="tokyo-night"]{
-      /* Tokyo Night Dark Theme */
-      --bg: #1a1b26; --fg: #c0caf5; --muted: #565f89; --card: #24283b; --accent: #7aa2f7; --danger: #f7768e; --ok: #9ece6a; --border: #414868; --focus: #e0af68;
-    }
-    [data-theme="high-contrast-dark"]{
-      /* High Contrast Dark (Accessibility) */
-      --bg: #000000; --fg: #ffffff; --muted: #cccccc; --card: #1a1a1a; --accent: #00ffff; --danger: #ff4444; --ok: #00ff00; --border: #666666; --focus: #ffff00;
-    }
-    [data-theme="high-contrast-light"]{
-      /* High Contrast Light (Accessibility) */
-      --bg: #ffffff; --fg: #000000; --muted: #444444; --card: #f0f0f0; --accent: #0066cc; --danger: #cc0000; --ok: #006600; --border: #999999; --focus: #ff6600;
-    }
-    html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji"}
-
-    .app{
-      max-width:960px;
-      max-height: 100vh;
-      margin:0 auto;
-      padding:16px
-    }
-
-    header{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      justify-content:
-      space-between;
-      min-height:60px;
-      padding:12px 16px !important;
-    }
-    h1{font-size:1.25rem;margin:0;flex:1}
-    .muted{color:var(--muted)}
-
-    /* Icon buttons */
-    .btn-icon{
-      height:44px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:0;
-      font-size:1.2rem;
-      border-radius:50%;
-      min-width:44px;
-    }
-    .btn-icon:hover{
-      background:var(--card);
-    }
-    .btn-icon span{
-      display:block;
-      line-height:1;
-    }
-
-    /* Responsive toolbar */
-    .toolbar{
-      display:flex;
-      gap:8px;
-      align-items:center;
-    }
-    @media (max-width:480px){
-      header{gap:8px}
-      h1{font-size:1.1rem}
-      .btn-icon{height:40px;font-size:1.1rem}
-    }
-    .btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--fg);padding:10px 14px;border-radius:12px;cursor:pointer}
-    .btn.primary{background:var(--accent);border-color:transparent;color:white}
-    .btn.ghost{background:transparent}
-    .btn.danger{background:var(--danger);border-color:transparent;color:white}
-    .btn:focus{outline:3px solid var(--focus);outline-offset:2px}
-    .row{display:flex;gap:12px;align-items:center}
-    .stack{display:flex;flex-direction:column;gap:12px}
-    .grid{display:grid;gap:12px}
-    .list{display:grid;gap:12px;margin-block:16px}
-    .card{background:var(--card);border:1px solid var(--border);padding:14px;border-radius:16px}
-    .card:hover{border-color:var(--accent)}
-    label{font-weight:600}
-    input[type="text"], input[type="number"], select{width:100%;box-sizing:border-box;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--fg)}
-    input[type="color"]{width:44px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;padding:0}
-    .small{font-size:.9rem}
-    .right{margin-left:auto}
-    .section-title{font-weight:700;font-size:1rem;margin:8px 0; color: var(--fg);}
-    .error{color:var(--danger)}
-    .ok{color:var(--ok)}
-    .pill{font-size:.8rem;background:var(--bg);border:1px solid var(--border);padding:4px 8px;border-radius:999px;color:var(--fg)}
-    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
-    .sr-only{position:absolute!important;left:-10000px!important;top:auto!important;width:1px!important;height:1px!important;overflow:hidden!important}
-    #authBtn{display:none} /* Hidden until auth check completes */
-
-    /* Run view */
-    .run-root{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
-    .run-overlay{position:fixed;left:0;right:0;top:0;display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px}
-    .run-panel{background:rgba(0,0,0,.35);backdrop-filter:blur(8px);border-radius:16px;padding:10px;display:flex;gap:8px;align-items:center}
-    .run-info{position:fixed;left:10px;bottom:10px;background:rgba(0,0,0,.35);backdrop-filter:blur(8px);padding:10px 14px;border-radius:12px;font-weight:600}
-
-    /* Simple tabs/pages */
-    .page{display:none; padding: 0 1rem;}
-    .page.active{display:block}
-
-    /* Completely hide list page during onboarding */
-    body:not(.onboarded) #page-list {
-      display: none !important;
-      visibility: hidden !important;
-      position: absolute !important;
-      left: -9999px !important;
-    }
-
-
-    /* Table-like rows for blocks */
-    .blocks{display:grid;gap:12px}
-    .block-row{
-      display:grid;
-      grid-template-columns: minmax(140px, auto) minmax(60px, auto) 1fr minmax(40px, auto);
-      gap:12px;
-      align-items:start;
-      padding:12px;
-      background:var(--bg);
-      border:1px solid var(--border);
-      border-radius:8px;
-    }
-
-    /* Mobile layout - stack vertically */
-    @media (max-width:768px){
-      .block-row{
-        grid-template-columns:1fr;
-        gap:8px;
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="favicon-192x192.png" />
+    <link rel="manifest" href="manifest.json" />
+    <style>
+      :root {
+        /* Gruvbox Material Dark Theme */
+        --bg: #282828;
+        --fg: #fbf1c7;
+        --muted: #928374;
+        --card: #3c3836;
+        --accent: #83a598;
+        --danger: #fb4934;
+        --ok: #b8bb26;
+        --focus: #fabd2f;
+        --border: #504945;
       }
-      .block-row > *{
-        width:100%;
+      [data-theme="light"] {
+        /* Gruvbox Material Light Theme */
+        --bg: #fbf1c7;
+        --fg: #282828;
+        --muted: #7c6f64;
+        --card: #f2e5bc;
+        --accent: #458588;
+        --danger: #cc241d;
+        --ok: #98971a;
+        --border: #d5c4a1;
+        --focus: #d79921;
       }
-      .time-input{
-        justify-content:center;
+      [data-theme="nord"] {
+        /* Nord Dark Theme */
+        --bg: #2e3440;
+        --fg: #eceff4;
+        --muted: #616e88;
+        --card: #3b4252;
+        --accent: #81a1c1;
+        --danger: #bf616a;
+        --ok: #a3be8c;
+        --border: #4c566a;
+        --focus: #ebcb8b;
       }
-      .color-selector{
-        align-self:center;
+      [data-theme="nord-light"] {
+        /* Nord Light Theme */
+        --bg: #eceff4;
+        --fg: #2e3440;
+        --muted: #5e81ac;
+        --card: #e5e9f0;
+        --accent: #5e81ac;
+        --danger: #bf616a;
+        --ok: #a3be8c;
+        --border: #d8dee9;
+        --focus: #ebcb8b;
       }
-    }
-
-    /* Time Input Layout */
-    .time-input{
-      display:flex;
-      gap:6px;
-      align-items:center;
-      flex-wrap:wrap;
-      justify-content:flex-start;
-    }
-    .time-input input{
-      width:50px!important;
-      text-align:center;
-      padding:8px 4px!important;
-      min-width:0;
-      font-size:0.9rem;
-    }
-    .time-input .separator{
-      color:var(--muted);
-      font-weight:bold;
-      user-select:none;
-      margin:0 2px;
-    }
-    .time-input .time-label{
-      color:var(--muted);
-      font-size:0.8rem;
-      font-weight:600;
-      user-select:none;
-      margin-left:2px;
-    }
-
-    /* Color Selector Popover */
-    .color-selector{position:relative;display:inline-block;align-self:center}
-    .color-preview{
-      width:50px;
-      height:40px;
-      border-radius:8px;
-      border:2px solid var(--border);
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:12px;
-      color:white;
-      text-shadow:1px 1px 1px rgba(0,0,0,0.5);
-      transition:border-color 0.2s;
-    }
-    .color-preview:hover{border-color:var(--accent)}
-
-    /* Block row labels for better UX */
-    .block-row-label{
-      display:none;
-      font-size:0.8rem;
-      color:var(--muted);
-      font-weight:600;
-      margin-bottom:4px;
-    }
-
-    @media (max-width:768px){
-      .block-row-label{display:block}
-      .color-selector{align-self:flex-start}
-    }
-    .color-popover{position:absolute;top:100%;left:0;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,0.2);z-index:1000;display:none;min-width:200px}
-    .color-popover.show{display:block}
-    .color-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-    .color-option{width:32px;height:32px;border-radius:6px;border:2px solid transparent;cursor:pointer;transition:all 0.2s}
-    .color-option:hover{border-color:var(--accent);transform:scale(1.1)}
-    .color-option.selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
-    .custom-color-row{display:flex;align-items:center;gap:8px;padding-top:8px;border-top:1px solid var(--border)}
-    .custom-color-input{width:80px;height:28px;border:1px solid var(--border);border-radius:4px;background:transparent}
-
-    /* Loading Screen */
-    .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.3s ease-out}
-    .loading-screen.hide{opacity:0;pointer-events:none}
-    .loading-container{width:280px;max-width:80vw}
-    .loading-bar-bg{width:100%;height:8px;background:var(--card);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
-    .loading-bar{height:100%;background:var(--fg);animation:loading-progress 0.01s ease-in-out;border-radius:4px;width:0%}
-
-    @keyframes loading-progress {
-      0% { width: 0% }
-      25% { width: 20% }
-      50% { width: 50% }
-      75% { width: 80% }
-      100% { width: 100% }
-    }
-
-    /* Onboarding Styles */
-    .onboarding-container{
-      max-width:800px;
-      margin:0 auto;
-      padding:40px 20px;
-    }
-    .onboarding-content{
-      text-align:center;
-    }
-    .onboarding-content h2{
-      font-size:2rem;
-      margin-bottom:16px;
-    }
-    .onboarding-content p{
-      font-size:1.1rem;
-      margin-bottom:24px;
-    }
-
-    /* Theme Selection */
-    .theme-selection h3{
-      margin:32px 0 8px 0;
-      font-size:1.3rem;
-    }
-    .theme-grid{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      margin:20px auto;
-      width:95%;
-      max-width:95%;
-    }
-
-    /* Desktop: switch to grid only on larger screens */
-    @media (min-width: 900px) {
-      .theme-grid{
-        display:grid;
-        grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
-        gap:16px;
-        margin:24px 0;
-        width:auto;
-        max-width:none;
+      [data-theme="dracula"] {
+        /* Dracula Dark Theme */
+        --bg: #282a36;
+        --fg: #f8f8f2;
+        --muted: #6272a4;
+        --card: #44475a;
+        --accent: #bd93f9;
+        --danger: #ff5555;
+        --ok: #50fa7b;
+        --border: #6272a4;
+        --focus: #f1fa8c;
       }
-    }
-
-    /* Prevent horizontal scrolling */
-    body {
-      overflow-x: hidden;
-    }
-    .app {
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-    .theme-option{
-      cursor:pointer;
-      padding:16px;
-      border:2px solid var(--border);
-      border-radius:12px;
-      transition:all 0.2s;
-      display:flex;
-      align-items:center;
-      gap:16px;
-      text-align:left;
-      width:100%;
-      box-sizing:border-box;
-    }
-
-    /* Desktop: center-aligned theme options */
-    @media (min-width: 900px) {
-      .theme-option{
-        display:block;
-        text-align:center;
-        padding:12px;
+      [data-theme="tokyo-night"] {
+        /* Tokyo Night Dark Theme */
+        --bg: #1a1b26;
+        --fg: #c0caf5;
+        --muted: #565f89;
+        --card: #24283b;
+        --accent: #7aa2f7;
+        --danger: #f7768e;
+        --ok: #9ece6a;
+        --border: #414868;
+        --focus: #e0af68;
       }
-    }
-    .theme-option:hover{
-      border-color:var(--accent);
-      transform:translateY(-2px);
-    }
-    .theme-option.selected{
-      border-color:var(--accent);
-      background:var(--card);
-      box-shadow:0 4px 12px rgba(0,0,0,0.1);
-    }
-    .theme-preview{
-      width:60px;
-      height:40px;
-      border-radius:8px;
-      margin:0;
-      border:1px solid rgba(0,0,0,0.1);
-      flex-shrink:0;
-    }
-
-    /* Desktop: full width previews */
-    @media (min-width: 900px) {
-      .theme-preview{
-        width:100%;
-        height:60px;
-        margin-bottom:8px;
-        flex-shrink:1;
+      [data-theme="high-contrast-dark"] {
+        /* High Contrast Dark (Accessibility) */
+        --bg: #000000;
+        --fg: #ffffff;
+        --muted: #cccccc;
+        --card: #1a1a1a;
+        --accent: #00ffff;
+        --danger: #ff4444;
+        --ok: #00ff00;
+        --border: #666666;
+        --focus: #ffff00;
       }
-    }
-    .theme-option span{
-      font-size:1rem;
-      font-weight:600;
-      flex:1;
-      text-align:left;
-    }
-
-    /* Desktop: center text */
-    @media (min-width: 900px) {
-      .theme-option span{
-        font-size:0.9rem;
-        flex:none;
-        text-align:center;
+      [data-theme="high-contrast-light"] {
+        /* High Contrast Light (Accessibility) */
+        --bg: #ffffff;
+        --fg: #000000;
+        --muted: #444444;
+        --card: #f0f0f0;
+        --accent: #0066cc;
+        --danger: #cc0000;
+        --ok: #006600;
+        --border: #999999;
+        --focus: #ff6600;
       }
-    }
-
-    /* Theme preview colors */
-    .gruvbox-dark{background:linear-gradient(135deg, #282828 0%, #3c3836 50%, #83a598 100%)}
-    .gruvbox-light{background:linear-gradient(135deg, #fbf1c7 0%, #f2e5bc 50%, #458588 100%)}
-    .nord-dark{background:linear-gradient(135deg, #2e3440 0%, #3b4252 50%, #81a1c1 100%)}
-    .nord-light{background:linear-gradient(135deg, #eceff4 0%, #e5e9f0 50%, #5e81ac 100%)}
-    .dracula{background:linear-gradient(135deg, #282a36 0%, #44475a 50%, #bd93f9 100%)}
-    .tokyo-night{background:linear-gradient(135deg, #1a1b26 0%, #24283b 50%, #7aa2f7 100%)}
-    .high-contrast-dark{background:linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #00ffff 100%)}
-    .high-contrast-light{background:linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #0066cc 100%)}
-
-    /* Features grid */
-    .features-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
-      gap:24px;
-      margin:32px 0;
-      text-align:left;
-    }
-    .feature{
-      padding:24px;
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:12px;
-    }
-    .feature-icon{
-      font-size:2.5rem;
-      margin-bottom:16px;
-      text-align:center;
-    }
-    .feature h3{
-      margin:0 0 12px 0;
-      text-align:center;
-    }
-    .feature p{
-      margin:0;
-      font-size:1rem;
-      line-height:1.5;
-    }
-
-    /* Sync explanation */
-    .sync-explanation{
-      max-width:500px;
-      margin:32px auto;
-      text-align:left;
-    }
-    .sync-benefits h3{
-      margin:0 0 16px 0;
-      text-align:center;
-    }
-    .sync-benefits ul{
-      margin:16px 0;
-      padding-left:20px;
-    }
-    .sync-benefits li{
-      margin:12px 0;
-      line-height:1.5;
-    }
-
-    /* Completion */
-    .completion-message{
-      max-width:500px;
-      margin:32px auto;
-    }
-    .completion-icon{
-      font-size:4rem;
-      margin-bottom:16px;
-    }
-    .quick-tips{
-      text-align:left;
-      margin:24px 0;
-    }
-    .quick-tips h3{
-      text-align:center;
-      margin:0 0 16px 0;
-    }
-    .quick-tips ul{
-      margin:16px 0;
-      padding-left:20px;
-    }
-    .quick-tips li{
-      margin:8px 0;
-      line-height:1.5;
-    }
-
-    /* Onboarding actions */
-    .onboarding-actions{
-      display:flex;
-      gap:12px;
-      justify-content:center;
-      margin-top:32px;
-      flex-wrap:wrap;
-    }
-
-    /* Mobile adjustments */
-    @media (max-width:768px){
-      html, body{
-        overflow-x:hidden !important;
-        width:100% !important;
-        max-width:100% !important;
-        height:100% !important;
-      }
-      .app{
-        max-width:100% !important;
-        padding:0 !important;
-        margin:0 !important;
-        width:100% !important;
-        height:100% !important;
-      }
-
-      /* Header - full width */
-      header{
-        width:100% !important;
-        padding:12px 16px !important;
-        gap:8px !important;
-        flex-shrink:0 !important;
-        box-sizing:border-box !important;
-      }
-
-      /* Onboarding flex column layout */
-      #page-onboarding{
-        display:flex;
-        flex-direction:column !important;
-        overflow:hidden !important;
-      }
-
-      .onboarding-container{
-        display:flex !important;
-        flex-direction:column !important;
-        flex:1 !important;
-        width:100% !important;
-        padding:0 !important;
-        margin:0 !important;
-        overflow:hidden !important;
-      }
-
-      /* Header section - full width */
-      .onboarding-header{
-        width:100% !important;
-        padding:20px 2.5% !important;
-        flex-shrink:0 !important;
-        text-align:center !important;
-        box-sizing:border-box !important;
-      }
-      .onboarding-header h2{
-        font-size:1.5rem !important;
-        margin:0 0 8px 0 !important;
-        color:var(--fg) !important;
-      }
-      .onboarding-header p{
-        font-size:1rem !important;
-        margin:0 !important;
-        color:var(--fg) !important;
-      }
-
-      /* Description section - 95% width */
-      .onboarding-description{
-        width:95% !important;
-        max-width:95% !important;
-        margin:0 auto !important;
-        padding:16px 0 !important;
-        text-align:center !important;
-        flex-shrink:0 !important;
-        box-sizing:border-box !important;
-      }
-      .onboarding-description h3{
-        font-size:1.2rem !important;
-        margin:0 0 8px 0 !important;
-        color:var(--fg) !important;
-      }
-      .onboarding-description p{
-        font-size:0.9rem !important;
-        margin:0 !important;
-        color:var(--muted) !important;
-      }
-
-      /* Scrollable theme container - 95% width */
-      .onboarding-themes{
-        width:95% !important;
-        max-width:95% !important;
-        margin:0 auto !important;
-        flex:1 !important;
-        overflow-y:auto !important;
-        overflow-x:hidden !important;
-        padding:8px 0 !important;
-        box-sizing:border-box !important;
-      }
-
-
-      /* Continue button - 95% width, fixed at bottom */
-      .onboarding-actions{
-        width:95% !important;
-        max-width:95% !important;
-        margin:0 auto !important;
-        padding:16px 0 20px 0 !important;
-        flex-shrink:0 !important;
-        display:flex !important;
-        justify-content:center !important;
-        background:var(--bg) !important;
-        box-sizing:border-box !important;
-      }
-      .onboarding-actions .btn{
-        width:100% !important;
-        padding:14px !important;
-        font-size:1rem !important;
-        margin:0 !important;
-        box-sizing:border-box !important;
-      }
-
-      /* Other onboarding steps */
-      .features-grid{
-        grid-template-columns:1fr;
-        gap:16px;
-      }
-      .feature{
-        padding:16px;
-      }
-    }
-
-    /* CSS GRID LAYOUT - Reliable mobile-first approach */
-    @media screen and (max-width: 1000px) {
-      html, body {
+      html,
+      body {
         height: 100%;
-        overflow-x: hidden;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          16px/1.4 system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Ubuntu,
+          Cantarell,
+          Noto Sans,
+          Arial,
+          "Apple Color Emoji",
+          "Segoe UI Emoji";
       }
 
       .app {
-        height: 100%;
-        overflow-x: hidden;
-        max-width: 100%;
+        max-width: 960px;
+        max-height: 100vh;
+        margin: 0 auto;
+        padding: 16px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: space-between;
+        min-height: 60px;
+        padding: 12px 16px !important;
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin: 0;
+        flex: 1;
+      }
+      .muted {
+        color: var(--muted);
+      }
+
+      /* Icon buttons */
+      .btn-icon {
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        font-size: 1.2rem;
+        border-radius: 50%;
+        min-width: 44px;
+      }
+      .btn-icon:hover {
+        background: var(--card);
+      }
+      .btn-icon span {
+        display: block;
+        line-height: 1;
+      }
+
+      /* Responsive toolbar */
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      @media (max-width: 480px) {
+        header {
+          gap: 8px;
+        }
+        h1 {
+          font-size: 1.1rem;
+        }
+        .btn-icon {
+          height: 40px;
+          font-size: 1.1rem;
+        }
+      }
+      .btn {
+        appearance: none;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--fg);
+        padding: 10px 14px;
+        border-radius: 12px;
+        cursor: pointer;
+      }
+      .btn.primary {
+        background: var(--accent);
+        border-color: transparent;
+        color: white;
+      }
+      .btn.ghost {
+        background: transparent;
+      }
+      .btn.danger {
+        background: var(--danger);
+        border-color: transparent;
+        color: white;
+      }
+      .btn:focus {
+        outline: 3px solid var(--focus);
+        outline-offset: 2px;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .grid {
+        display: grid;
+        gap: 12px;
+      }
+      .list {
+        display: grid;
+        gap: 12px;
+        margin-block: 16px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 14px;
+        border-radius: 16px;
+      }
+      .card:hover {
+        border-color: var(--accent);
+      }
+      label {
+        font-weight: 600;
+      }
+      input[type="text"],
+      input[type="number"],
+      select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--fg);
+      }
+      input[type="color"] {
+        width: 44px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: transparent;
         padding: 0;
       }
-
-      /* MAIN GRID CONTAINER */
-      .onboarding-step {
-        height: 100vh;
-        display: grid;
-        grid-template-rows: auto 1fr auto;
-        grid-template-areas:
-          "header"
-          "content"
-          "actions";
-        overflow: hidden;
+      .small {
+        font-size: 0.9rem;
       }
-
-      /* GRID AREA 1: HEADER */
-      .onboarding-step .onboarding-header {
-        grid-area: header;
-        padding: 1rem 5% 0.5rem 5%;
-        text-align: center;
-        background: var(--bg);
-        border-bottom: 1px solid var(--border);
+      .right {
+        margin-left: auto;
       }
-
-      .onboarding-step .onboarding-header h2 {
-        margin: 0 0 0.5rem 0;
-        font-size: 1.5rem;
-      }
-
-      .onboarding-step .onboarding-header p {
-        margin: 0;
+      .section-title {
+        font-weight: 700;
         font-size: 1rem;
-        color: var(--muted);
+        margin: 8px 0;
+        color: var(--fg);
       }
-
-      /* GRID AREA 2: SCROLLABLE CONTENT */
-      .onboarding-step .onboarding-content-area {
-        grid-area: content;
-        overflow-y: auto;
-        padding: 1rem 5%;
+      .error {
+        color: var(--danger);
+      }
+      .ok {
+        color: var(--ok);
+      }
+      .pill {
+        font-size: 0.8rem;
         background: var(--bg);
+        border: 1px solid var(--border);
+        padding: 4px 8px;
+        border-radius: 999px;
+        color: var(--fg);
+      }
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .sr-only {
+        position: absolute !important;
+        left: -10000px !important;
+        top: auto !important;
+        width: 1px !important;
+        height: 1px !important;
+        overflow: hidden !important;
+      }
+      #authBtn {
+        display: none;
+      } /* Hidden until auth check completes */
+
+      /* Run view */
+      .run-root {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .run-overlay {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+      }
+      .run-panel {
+        background: rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(8px);
+        border-radius: 16px;
+        padding: 10px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .run-info {
+        position: fixed;
+        left: 10px;
+        bottom: 10px;
+        background: rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(8px);
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-weight: 600;
       }
 
-      .onboarding-step .onboarding-description h3 {
-        margin: 0 0 0.5rem 0;
-        font-size: 1.2rem;
-        text-align: center;
+      /* Simple tabs/pages */
+      .page {
+        display: none;
+        padding: 0 1rem;
+      }
+      .page.active {
+        display: block;
       }
 
-      .onboarding-step .onboarding-description p {
-        margin: 0 0 1.5rem 0;
+      /* Completely hide list page during onboarding */
+      body:not(.onboarded) #page-list {
+        display: none !important;
+        visibility: hidden !important;
+        position: absolute !important;
+        left: -9999px !important;
+      }
+
+      /* Table-like rows for blocks */
+      .blocks {
+        display: grid;
+        gap: 12px;
+      }
+      .block-row {
+        display: grid;
+        grid-template-columns: minmax(140px, auto) minmax(
+            60px,
+            auto
+          ) 1fr minmax(40px, auto);
+        gap: 12px;
+        align-items: start;
+        padding: 12px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      /* Mobile layout - stack vertically */
+      @media (max-width: 768px) {
+        .block-row {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+        .block-row > * {
+          width: 100%;
+        }
+        .time-input {
+          justify-content: center;
+        }
+        .color-selector {
+          align-self: center;
+        }
+      }
+
+      /* Time Input Layout */
+      .time-input {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
+      .time-input input {
+        width: 50px !important;
         text-align: center;
+        padding: 8px 4px !important;
+        min-width: 0;
+        font-size: 0.9rem;
+      }
+      .time-input .separator {
         color: var(--muted);
+        font-weight: bold;
+        user-select: none;
+        margin: 0 2px;
+      }
+      .time-input .time-label {
+        color: var(--muted);
+        font-size: 0.8rem;
+        font-weight: 600;
+        user-select: none;
+        margin-left: 2px;
       }
 
-      /* Theme grid styling */
+      /* Color Selector Popover */
+      .color-selector {
+        position: relative;
+        display: inline-block;
+        align-self: center;
+      }
+      .color-preview {
+        width: 50px;
+        height: 40px;
+        border-radius: 8px;
+        border: 2px solid var(--border);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: white;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+        transition: border-color 0.2s;
+      }
+      .color-preview:hover {
+        border-color: var(--accent);
+      }
+
+      /* Block row labels for better UX */
+      .block-row-label {
+        display: none;
+        font-size: 0.8rem;
+        color: var(--muted);
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      @media (max-width: 768px) {
+        .block-row-label {
+          display: block;
+        }
+        .color-selector {
+          align-self: flex-start;
+        }
+      }
+      .color-popover {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        display: none;
+        min-width: 200px;
+      }
+      .color-popover.show {
+        display: block;
+      }
+      .color-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .color-option {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .color-option:hover {
+        border-color: var(--accent);
+        transform: scale(1.1);
+      }
+      .color-option.selected {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px var(--accent);
+      }
+      .custom-color-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--border);
+      }
+      .custom-color-input {
+        width: 80px;
+        height: 28px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: transparent;
+      }
+
+      /* Loading Screen */
+      .loading-screen {
+        position: fixed;
+        inset: 0;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.3s ease-out;
+      }
+      .loading-screen.hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .loading-container {
+        width: 280px;
+        max-width: 80vw;
+      }
+      .loading-bar-bg {
+        width: 100%;
+        height: 8px;
+        background: var(--card);
+        border-radius: 4px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+      .loading-bar {
+        height: 100%;
+        background: var(--fg);
+        animation: loading-progress 0.01s ease-in-out;
+        border-radius: 4px;
+        width: 0%;
+      }
+
+      @keyframes loading-progress {
+        0% {
+          width: 0%;
+        }
+        25% {
+          width: 20%;
+        }
+        50% {
+          width: 50%;
+        }
+        75% {
+          width: 80%;
+        }
+        100% {
+          width: 100%;
+        }
+      }
+
+      /* Onboarding Styles */
+      .onboarding-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+      .onboarding-content {
+        text-align: center;
+      }
+      .onboarding-content h2 {
+        font-size: 2rem;
+        margin-bottom: 16px;
+      }
+      .onboarding-content p {
+        font-size: 1.1rem;
+        margin-bottom: 24px;
+      }
+
+      /* Theme Selection */
+      .theme-selection h3 {
+        margin: 32px 0 8px 0;
+        font-size: 1.3rem;
+      }
       .theme-grid {
         display: flex;
         flex-direction: column;
         gap: 12px;
-        max-height: none;
+        margin: 20px auto;
+        width: 95%;
+        max-width: 95%;
       }
 
+      /* Desktop: switch to grid only on larger screens */
+      @media (min-width: 900px) {
+        .theme-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          gap: 16px;
+          margin: 24px 0;
+          width: auto;
+          max-width: none;
+        }
+      }
+
+      /* Prevent horizontal scrolling */
+      body {
+        overflow-x: hidden;
+      }
+      .app {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
       .theme-option {
+        cursor: pointer;
+        padding: 16px;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        transition: all 0.2s;
         display: flex;
         align-items: center;
         gap: 16px;
-        padding: 12px;
-        border-radius: 8px;
-        border: 2px solid transparent;
-        cursor: pointer;
-        background: var(--card);
-      }
-
-      .theme-option.selected {
-        border-color: var(--accent);
-        background: var(--accent);
-        color: var(--bg);
-      }
-
-      .theme-preview {
-        width: 60px;
-        height: 40px;
-        border-radius: 4px;
-        flex-shrink: 0;
-      }
-
-      .theme-option span {
-        flex: 1;
-        font-size: 1rem;
-        font-weight: 500;
-      }
-
-      /* Features grid for step 2 */
-      .features-grid {
-        display: grid;
-        gap: 1rem;
-        grid-template-columns: 1fr;
-      }
-
-      .feature {
-        padding: 1rem;
-        background: var(--card);
-        border-radius: 8px;
-        text-align: center;
-      }
-
-      /* GRID AREA 3: ALWAYS-VISIBLE ACTIONS */
-      .onboarding-step .onboarding-actions {
-        grid-area: actions;
-        padding: 1rem 5%;
-        background: var(--bg);
-        border-top: 1px solid var(--border);
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .onboarding-actions .btn {
-        flex: 1;
-        max-width: 200px;
-        min-height: 44px;
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-        font-weight: 600;
-        touch-action: manipulation;
+        text-align: left;
+        width: 100%;
         box-sizing: border-box;
       }
 
-      /* Hide non-active onboarding steps */
-      .onboarding-step[style*="display:none"] {
-        display: none;
+      /* Desktop: center-aligned theme options */
+      @media (min-width: 900px) {
+        .theme-option {
+          display: block;
+          text-align: center;
+          padding: 12px;
+        }
+      }
+      .theme-option:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+      }
+      .theme-option.selected {
+        border-color: var(--accent);
+        background: var(--card);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      .theme-preview {
+        width: 60px;
+        height: 40px;
+        border-radius: 8px;
+        margin: 0;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
       }
 
-      /* Additional content styling */
-      .sync-explanation, .completion-message {
+      /* Desktop: full width previews */
+      @media (min-width: 900px) {
+        .theme-preview {
+          width: 100%;
+          height: 60px;
+          margin-bottom: 8px;
+          flex-shrink: 1;
+        }
+      }
+      .theme-option span {
+        font-size: 1rem;
+        font-weight: 600;
+        flex: 1;
+        text-align: left;
+      }
+
+      /* Desktop: center text */
+      @media (min-width: 900px) {
+        .theme-option span {
+          font-size: 0.9rem;
+          flex: none;
+          text-align: center;
+        }
+      }
+
+      /* Theme preview colors */
+      .gruvbox-dark {
+        background: linear-gradient(
+          135deg,
+          #282828 0%,
+          #3c3836 50%,
+          #83a598 100%
+        );
+      }
+      .gruvbox-light {
+        background: linear-gradient(
+          135deg,
+          #fbf1c7 0%,
+          #f2e5bc 50%,
+          #458588 100%
+        );
+      }
+      .nord-dark {
+        background: linear-gradient(
+          135deg,
+          #2e3440 0%,
+          #3b4252 50%,
+          #81a1c1 100%
+        );
+      }
+      .nord-light {
+        background: linear-gradient(
+          135deg,
+          #eceff4 0%,
+          #e5e9f0 50%,
+          #5e81ac 100%
+        );
+      }
+      .dracula {
+        background: linear-gradient(
+          135deg,
+          #282a36 0%,
+          #44475a 50%,
+          #bd93f9 100%
+        );
+      }
+      .tokyo-night {
+        background: linear-gradient(
+          135deg,
+          #1a1b26 0%,
+          #24283b 50%,
+          #7aa2f7 100%
+        );
+      }
+      .high-contrast-dark {
+        background: linear-gradient(
+          135deg,
+          #000000 0%,
+          #1a1a1a 50%,
+          #00ffff 100%
+        );
+      }
+      .high-contrast-light {
+        background: linear-gradient(
+          135deg,
+          #ffffff 0%,
+          #f0f0f0 50%,
+          #0066cc 100%
+        );
+      }
+
+      /* Features grid */
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 24px;
+        margin: 32px 0;
+        text-align: left;
+      }
+      .feature {
+        padding: 24px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+      .feature-icon {
+        font-size: 2.5rem;
+        margin-bottom: 16px;
         text-align: center;
       }
-
-      .completion-icon {
-        font-size: 3rem;
-        margin: 1rem 0;
+      .feature h3 {
+        margin: 0 0 12px 0;
+        text-align: center;
+      }
+      .feature p {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.5;
       }
 
-      .sync-benefits ul, .quick-tips ul {
-        text-align: left;
+      /* Sync explanation */
+      .sync-explanation {
         max-width: 500px;
-        margin: 1rem auto;
+        margin: 32px auto;
+        text-align: left;
+      }
+      .sync-benefits h3 {
+        margin: 0 0 16px 0;
+        text-align: center;
+      }
+      .sync-benefits ul {
+        margin: 16px 0;
+        padding-left: 20px;
+      }
+      .sync-benefits li {
+        margin: 12px 0;
+        line-height: 1.5;
       }
 
-      .sync-benefits li, .quick-tips li {
-        margin: 0.5rem 0;
-        line-height: 1.4;
+      /* Completion */
+      .completion-message {
+        max-width: 500px;
+        margin: 32px auto;
+      }
+      .completion-icon {
+        font-size: 4rem;
+        margin-bottom: 16px;
+      }
+      .quick-tips {
+        text-align: left;
+        margin: 24px 0;
+      }
+      .quick-tips h3 {
+        text-align: center;
+        margin: 0 0 16px 0;
+      }
+      .quick-tips ul {
+        margin: 16px 0;
+        padding-left: 20px;
+      }
+      .quick-tips li {
+        margin: 8px 0;
+        line-height: 1.5;
       }
 
-      .hidden {
-        display: none !important;
+      /* Onboarding actions */
+      .onboarding-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 32px;
+        flex-wrap: wrap;
       }
-    }
-  </style>
-</head>
-<body>
-  <!-- Loading Screen -->
-  <div id="loadingScreen" class="loading-screen">
-    <div class="loading-container">
-      <div class="loading-bar-bg">
-        <div class="loading-bar"></div>
+
+      /* Mobile adjustments */
+      @media (max-width: 768px) {
+        html,
+        body {
+          overflow-x: hidden !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          height: 100% !important;
+        }
+        .app {
+          max-width: 100% !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          width: 100% !important;
+          height: 100% !important;
+        }
+
+        /* Header - full width */
+        header {
+          width: 100% !important;
+          padding: 12px 16px !important;
+          gap: 8px !important;
+          flex-shrink: 0 !important;
+          box-sizing: border-box !important;
+        }
+
+        /* Onboarding flex column layout */
+        #page-onboarding {
+          display: flex;
+          flex-direction: column !important;
+          overflow: hidden !important;
+        }
+
+        .onboarding-container {
+          display: flex !important;
+          flex-direction: column !important;
+          flex: 1 !important;
+          width: 100% !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          overflow: hidden !important;
+        }
+
+        /* Header section - full width */
+        .onboarding-header {
+          width: 100% !important;
+          padding: 20px 2.5% !important;
+          flex-shrink: 0 !important;
+          text-align: center !important;
+          box-sizing: border-box !important;
+        }
+        .onboarding-header h2 {
+          font-size: 1.5rem !important;
+          margin: 0 0 8px 0 !important;
+          color: var(--fg) !important;
+        }
+        .onboarding-header p {
+          font-size: 1rem !important;
+          margin: 0 !important;
+          color: var(--fg) !important;
+        }
+
+        /* Description section - 95% width */
+        .onboarding-description {
+          width: 95% !important;
+          max-width: 95% !important;
+          margin: 0 auto !important;
+          padding: 16px 0 !important;
+          text-align: center !important;
+          flex-shrink: 0 !important;
+          box-sizing: border-box !important;
+        }
+        .onboarding-description h3 {
+          font-size: 1.2rem !important;
+          margin: 0 0 8px 0 !important;
+          color: var(--fg) !important;
+        }
+        .onboarding-description p {
+          font-size: 0.9rem !important;
+          margin: 0 !important;
+          color: var(--muted) !important;
+        }
+
+        /* Scrollable theme container - 95% width */
+        .onboarding-themes {
+          width: 95% !important;
+          max-width: 95% !important;
+          margin: 0 auto !important;
+          flex: 1 !important;
+          overflow-y: auto !important;
+          overflow-x: hidden !important;
+          padding: 8px 0 !important;
+          box-sizing: border-box !important;
+        }
+
+        /* Continue button - 95% width, fixed at bottom */
+        .onboarding-actions {
+          width: 95% !important;
+          max-width: 95% !important;
+          margin: 0 auto !important;
+          padding: 16px 0 20px 0 !important;
+          flex-shrink: 0 !important;
+          display: flex !important;
+          justify-content: center !important;
+          background: var(--bg) !important;
+          box-sizing: border-box !important;
+        }
+        .onboarding-actions .btn {
+          width: 100% !important;
+          padding: 14px !important;
+          font-size: 1rem !important;
+          margin: 0 !important;
+          box-sizing: border-box !important;
+        }
+
+        /* Other onboarding steps */
+        .features-grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        .feature {
+          padding: 16px;
+        }
+      }
+
+      /* CSS GRID LAYOUT - Reliable mobile-first approach */
+      @media screen and (max-width: 1000px) {
+        html,
+        body {
+          height: 100%;
+          overflow-x: hidden;
+        }
+
+        .app {
+          height: 100%;
+          overflow-x: hidden;
+          max-width: 100%;
+          padding: 0;
+        }
+
+        /* MAIN GRID CONTAINER */
+        .onboarding-step {
+          height: 100vh;
+          display: grid;
+          grid-template-rows: auto 1fr auto;
+          grid-template-areas:
+            "header"
+            "content"
+            "actions";
+          overflow: hidden;
+        }
+
+        /* GRID AREA 1: HEADER */
+        .onboarding-step .onboarding-header {
+          grid-area: header;
+          padding: 1rem 5% 0.5rem 5%;
+          text-align: center;
+          background: var(--bg);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .onboarding-step .onboarding-header h2 {
+          margin: 0 0 0.5rem 0;
+          font-size: 1.5rem;
+        }
+
+        .onboarding-step .onboarding-header p {
+          margin: 0;
+          font-size: 1rem;
+          color: var(--muted);
+        }
+
+        /* GRID AREA 2: SCROLLABLE CONTENT */
+        .onboarding-step .onboarding-content-area {
+          grid-area: content;
+          overflow-y: auto;
+          padding: 1rem 5%;
+          background: var(--bg);
+        }
+
+        .onboarding-step .onboarding-description h3 {
+          margin: 0 0 0.5rem 0;
+          font-size: 1.2rem;
+          text-align: center;
+        }
+
+        .onboarding-step .onboarding-description p {
+          margin: 0 0 1.5rem 0;
+          text-align: center;
+          color: var(--muted);
+        }
+
+        /* Theme grid styling */
+        .theme-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          max-height: none;
+        }
+
+        .theme-option {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 12px;
+          border-radius: 8px;
+          border: 2px solid transparent;
+          cursor: pointer;
+          background: var(--card);
+        }
+
+        .theme-option.selected {
+          border-color: var(--accent);
+          background: var(--accent);
+          color: var(--bg);
+        }
+
+        .theme-preview {
+          width: 60px;
+          height: 40px;
+          border-radius: 4px;
+          flex-shrink: 0;
+        }
+
+        .theme-option span {
+          flex: 1;
+          font-size: 1rem;
+          font-weight: 500;
+        }
+
+        /* Features grid for step 2 */
+        .features-grid {
+          display: grid;
+          gap: 1rem;
+          grid-template-columns: 1fr;
+        }
+
+        .feature {
+          padding: 1rem;
+          background: var(--card);
+          border-radius: 8px;
+          text-align: center;
+        }
+
+        /* GRID AREA 3: ALWAYS-VISIBLE ACTIONS */
+        .onboarding-step .onboarding-actions {
+          grid-area: actions;
+          padding: 1rem 5%;
+          background: var(--bg);
+          border-top: 1px solid var(--border);
+          display: flex;
+          gap: 1rem;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .onboarding-actions .btn {
+          flex: 1;
+          max-width: 200px;
+          min-height: 44px;
+          padding: 0.75rem 1.5rem;
+          font-size: 1rem;
+          font-weight: 600;
+          touch-action: manipulation;
+          box-sizing: border-box;
+        }
+
+        /* Hide non-active onboarding steps */
+        .onboarding-step[style*="display:none"] {
+          display: none;
+        }
+
+        /* Additional content styling */
+        .sync-explanation,
+        .completion-message {
+          text-align: center;
+        }
+
+        .completion-icon {
+          font-size: 3rem;
+          margin: 1rem 0;
+        }
+
+        .sync-benefits ul,
+        .quick-tips ul {
+          text-align: left;
+          max-width: 500px;
+          margin: 1rem auto;
+        }
+
+        .sync-benefits li,
+        .quick-tips li {
+          margin: 0.5rem 0;
+          line-height: 1.4;
+        }
+
+        .hidden {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+      <div class="loading-container">
+        <div class="loading-bar-bg">
+          <div class="loading-bar"></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="app">
-    <header>
-      <h1>Time Box</h1>
-      <nav class="toolbar" aria-label="Top toolbar">
-        <button class="btn btn-icon" id="authBtn" title="Sign in with Google" aria-label="Sign in with Google">
-          <span>≅</span>
-        </button>
-        <button class="hidden" id="installBtn" title="Install app (PWA)" aria-label="Install app" hidden>
-          <span>Install</span>
-        </button>
-        <button class="btn btn-icon" id="settingsBtn" title="Settings" aria-label="Settings">
-          <span>⚙︎</span>
-        </button>
-      </nav>
-    </header>
-
-    <!-- Page: List -->
-    <section id="page-list" class="page">
-      <div class="row" style="margin-top:16px">
-        <div class="stack" style="flex:1">
-          <div class="muted">Your timers</div>
-          <div class="small muted">Click a timer to run it full‑screen. Create as many as you like.</div>
-        </div>
-        <button class="btn primary" id="addTimerBtn">Add Timer</button>
-      </div>
-      <div id="timerList" class="list" role="list" aria-label="Timers"></div>
-      <div id="emptyState" class="card" style="display:none">
-        <div class="stack">
-          <div><strong>No timers yet.</strong></div>
-          <div class="muted small">Create your first timer with time blocks that change at specific times (e.g. 0s yellow, 300s green, 560s blue, 600s red).</div>
-          <div><button class="btn primary" id="createSampleBtn">Create sample Pomodoro</button></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Page: Edit -->
-    <section id="page-edit" class="page">
-      <div class="stack" style="margin-top:16px">
-        <div class="row">
-          <button class="btn btn-icon" id="backFromEdit" title="Back to timer list" aria-label="Back to timer list">
-            <span>←</span>
+    <div class="app">
+      <header>
+        <h1>Time Box</h1>
+        <nav class="toolbar" aria-label="Top toolbar">
+          <button
+            class="btn btn-icon"
+            id="authBtn"
+            title="Sign in with Google"
+            aria-label="Sign in with Google"
+          >
+            <span>≅</span>
           </button>
-          <div class="right"></div>
-          <button class="btn danger" id="deleteTimerBtn" title="Delete timer">Delete</button>
-          <button class="btn primary" id="saveTimerBtn" title="Save timer">Save</button>
-        </div>
-        <div class="card stack">
-          <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
-            <div class="stack">
-              <label for="timerName">Timer name</label>
-              <input id="timerName" type="text" placeholder="e.g., Writing Sprint"/>
-            </div>
-            <div class="stack">
-              <label for="defaultLabel">Default block label <span class="muted small">(optional)</span></label>
-              <input id="defaultLabel" type="text" placeholder="e.g., Focus"/>
-            </div>
-          </div>
-          <div class="section-title">Blocks</div>
-          <div id="blocks" class="blocks"></div>
-          <div class="toolbar">
-            <button class="btn" id="addBlockBtn">Add Block</button>
-            <button class="btn" id="sortBlocksBtn">Sort by time</button>
-            <button class="btn" id="validateBtn">Validate</button>
-            <span id="validateMsg" class="small"></span>
-          </div>
-        </div>
-      </div>
-    </section>
+          <button
+            class="hidden"
+            id="installBtn"
+            title="Install app (PWA)"
+            aria-label="Install app"
+            hidden
+          >
+            <span>Install</span>
+          </button>
+          <button
+            class="btn btn-icon"
+            id="settingsBtn"
+            title="Settings"
+            aria-label="Settings"
+          >
+            <span>⚙︎</span>
+          </button>
+        </nav>
+      </header>
 
-    <!-- Page: Run -->
-    <section id="page-run" class="page">
-      <div id="runRoot" class="run-root" aria-live="polite" aria-atomic="true">
-        <div class="run-overlay">
-          <div class="run-panel">
-            <button class="btn btn-icon" id="backFromRun" title="Back to timer list" aria-label="Back to timer list">
+      <!-- Page: List -->
+      <section id="page-list" class="page">
+        <div class="row" style="margin-top: 16px">
+          <div class="stack" style="flex: 1">
+            <div class="muted">Your timers</div>
+            <div class="small muted">
+              Click a timer to run it full‑screen. Create as many as you like.
+            </div>
+          </div>
+          <button class="btn primary" id="addTimerBtn">Add Timer</button>
+        </div>
+        <div id="timerList" class="list" role="list" aria-label="Timers"></div>
+        <div id="emptyState" class="card" style="display: none">
+          <div class="stack">
+            <div><strong>No timers yet.</strong></div>
+            <div class="muted small">
+              Create your first timer with time blocks that change at specific
+              times (e.g. 0s yellow, 300s green, 560s blue, 600s red).
+            </div>
+            <div>
+              <button class="btn primary" id="createSampleBtn">
+                Create sample Pomodoro
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Page: Edit -->
+      <section id="page-edit" class="page">
+        <div class="stack" style="margin-top: 16px">
+          <div class="row">
+            <button
+              class="btn btn-icon"
+              id="backFromEdit"
+              title="Back to timer list"
+              aria-label="Back to timer list"
+            >
               <span>←</span>
             </button>
-            <div id="runTitle" class="pill"></div>
+            <div class="right"></div>
+            <button class="btn danger" id="deleteTimerBtn" title="Delete timer">
+              Delete
+            </button>
+            <button class="btn primary" id="saveTimerBtn" title="Save timer">
+              Save
+            </button>
           </div>
-          <div class="run-panel">
-            <button class="btn" id="toggleBtn">Start</button>
-            <button class="btn" id="resetBtn">Reset</button>
-            <button class="btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
-          </div>
-        </div>
-        <div id="runInfo" class="run-info">—</div>
-      </div>
-    </section>
-
-    <!-- Page: Onboarding -->
-    <section id="page-onboarding" class="page">
-      <div class="onboarding-step" id="onboarding-step-1">
-        <!-- Grid Area: Header -->
-        <div class="onboarding-header">
-          <h2>Welcome to Time Box!</h2>
-          <p>Let's get you started with a quick setup.</p>
-        </div>
-
-        <!-- Grid Area: Content -->
-        <div class="onboarding-content-area">
-          <div class="features-grid">
-            <div class="feature">
-              <h3>Create Custom Timers</h3>
-              <p>Build timers with time blocks that change at specific times. Perfect for Pomodoro, workouts, presentations, or any timed activity.</p>
+          <div class="card stack">
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 12px">
+              <div class="stack">
+                <label for="timerName">Timer name</label>
+                <input
+                  id="timerName"
+                  type="text"
+                  placeholder="e.g., Writing Sprint"
+                />
+              </div>
+              <div class="stack">
+                <label for="defaultLabel"
+                  >Default block label
+                  <span class="muted small">(optional)</span></label
+                >
+                <input
+                  id="defaultLabel"
+                  type="text"
+                  placeholder="e.g., Focus"
+                />
+              </div>
             </div>
-            <div class="feature">
-              <h3>Visual Time Blocks</h3>
-              <p>Each timer shows different colors at different times. Green for focus, yellow for break, red for finish - you decide!</p>
-            </div>
-            <div class="feature">
-              <h3>Full-Screen Experience</h3>
-              <p>Run timers in full-screen mode with large, clear color displays. Great for visibility across rooms or during presentations.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Grid Area: Actions -->
-        <div class="onboarding-actions">
-          <button class="btn primary" id="onboarding-continue-1">Continue</button>
-        </div>
-      </div>
-
-
-      <div class="onboarding-step" id="onboarding-step-2" style="display:none">
-        <!-- Grid Area: Header -->
-        <div class="onboarding-header">
-          <h2>Sync Your Timers (Optional)</h2>
-        </div>
-
-        <!-- Grid Area: Content -->
-        <div class="onboarding-content-area">
-          <div class="sync-explanation">
-            <div class="sync-benefits">
-              <h3>Sign in with Google to:</h3>
-              <ul>
-                <li><strong>Sync across devices</strong> - Access your timers on phone, tablet, and desktop</li>
-                <li><strong>Never lose your work</strong> - Automatic cloud backup of all your timers</li>
-                <li><strong>Share between devices</strong> - Create on desktop, run on mobile</li>
-              </ul>
-              <p class="muted small">Your timers work great offline too! You can always sign in later from Settings.</p>
+            <div class="section-title">Blocks</div>
+            <div id="blocks" class="blocks"></div>
+            <div class="toolbar">
+              <button class="btn" id="addBlockBtn">Add Block</button>
+              <button class="btn" id="sortBlocksBtn">Sort by time</button>
+              <button class="btn" id="validateBtn">Validate</button>
+              <span id="validateMsg" class="small"></span>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- Grid Area: Actions -->
-        <div class="onboarding-actions">
-          <button class="btn ghost" id="onboarding-back-2">← Back</button>
-          <button class="btn" id="onboarding-skip-signin">Skip for now</button>
-          <button class="btn primary" id="onboarding-signin">Sign In with Google</button>
+      <!-- Page: Run -->
+      <section id="page-run" class="page">
+        <div
+          id="runRoot"
+          class="run-root"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <div class="run-overlay">
+            <div class="run-panel">
+              <button
+                class="btn btn-icon"
+                id="backFromRun"
+                title="Back to timer list"
+                aria-label="Back to timer list"
+              >
+                <span>←</span>
+              </button>
+              <div id="runTitle" class="pill"></div>
+            </div>
+            <div class="run-panel">
+              <button class="btn" id="toggleBtn">Start</button>
+              <button class="btn" id="resetBtn">Reset</button>
+              <button class="btn" id="fullscreenBtn" title="Fullscreen">
+                ⛶
+              </button>
+            </div>
+          </div>
+          <div id="runInfo" class="run-info">—</div>
         </div>
-      </div>
+      </section>
 
-      <div class="onboarding-step" id="onboarding-step-3" style="display:none">
-        <!-- Grid Area: Header -->
-        <div class="onboarding-header">
-          <h2>You're All Set!</h2>
+      <!-- Page: Onboarding -->
+      <section id="page-onboarding" class="page">
+        <div class="onboarding-step" id="onboarding-step-1">
+          <!-- Grid Area: Header -->
+          <div class="onboarding-header">
+            <h2>Welcome to Time Box!</h2>
+            <p>Let's get you started with a quick setup.</p>
+          </div>
+
+          <!-- Grid Area: Content -->
+          <div class="onboarding-content-area">
+            <div class="features-grid">
+              <div class="feature">
+                <h3>Create Custom Timers</h3>
+                <p>
+                  Build timers with time blocks that change at specific times.
+                  Perfect for Pomodoro, workouts, presentations, or any timed
+                  activity.
+                </p>
+              </div>
+              <div class="feature">
+                <h3>Visual Time Blocks</h3>
+                <p>
+                  Each timer shows different colors at different times. Green
+                  for focus, yellow for break, red for finish - you decide!
+                </p>
+              </div>
+              <div class="feature">
+                <h3>Full-Screen Experience</h3>
+                <p>
+                  Run timers in full-screen mode with large, clear color
+                  displays. Great for visibility across rooms or during
+                  presentations.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grid Area: Actions -->
+          <div class="onboarding-actions">
+            <button class="btn primary" id="onboarding-continue-1">
+              Continue
+            </button>
+          </div>
         </div>
 
-        <!-- Grid Area: Content -->
-        <div class="onboarding-content-area">
-          <div class="completion-message">
-            <div class="completion-icon">🎉</div>
-            <p>Your Time Box is ready to use.</p>
-            <div class="quick-tips">
-              <h3>Quick Tips:</h3>
-              <ul>
-                <li>Click "Add Timer" to create your first custom timer</li>
-                <li>Try the sample Pomodoro timer to get started</li>
-                <li>Click any timer to run it full-screen</li>
-                <li>Access Settings anytime from the gear icon ⚙️</li>
-              </ul>
+        <div
+          class="onboarding-step"
+          id="onboarding-step-2"
+          style="display: none"
+        >
+          <!-- Grid Area: Header -->
+          <div class="onboarding-header">
+            <h2>Sync Your Timers (Optional)</h2>
+          </div>
+
+          <!-- Grid Area: Content -->
+          <div class="onboarding-content-area">
+            <div class="sync-explanation">
+              <div class="sync-benefits">
+                <h3>Sign in with Google to:</h3>
+                <ul>
+                  <li>
+                    <strong>Sync across devices</strong> - Access your timers on
+                    phone, tablet, and desktop
+                  </li>
+                  <li>
+                    <strong>Never lose your work</strong> - Automatic cloud
+                    backup of all your timers
+                  </li>
+                  <li>
+                    <strong>Share between devices</strong> - Create on desktop,
+                    run on mobile
+                  </li>
+                </ul>
+                <p class="muted small">
+                  Your timers work great offline too! You can always sign in
+                  later from Settings.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grid Area: Actions -->
+          <div class="onboarding-actions">
+            <button class="btn ghost" id="onboarding-back-2">← Back</button>
+            <button class="btn" id="onboarding-skip-signin">
+              Skip for now
+            </button>
+            <button class="btn primary" id="onboarding-signin">
+              Sign In with Google
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="onboarding-step"
+          id="onboarding-step-3"
+          style="display: none"
+        >
+          <!-- Grid Area: Header -->
+          <div class="onboarding-header">
+            <h2>You're All Set!</h2>
+          </div>
+
+          <!-- Grid Area: Content -->
+          <div class="onboarding-content-area">
+            <div class="completion-message">
+              <div class="completion-icon">🎉</div>
+              <p>Your Time Box is ready to use.</p>
+              <div class="quick-tips">
+                <h3>Quick Tips:</h3>
+                <ul>
+                  <li>Click "Add Timer" to create your first custom timer</li>
+                  <li>Try the sample Pomodoro timer to get started</li>
+                  <li>Click any timer to run it full-screen</li>
+                  <li>Access Settings anytime from the gear icon ⚙️</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grid Area: Actions -->
+          <div class="onboarding-actions">
+            <button class="btn primary" id="onboarding-finish">
+              Start Using Time Box
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Page: Settings -->
+      <section id="page-settings" class="page">
+        <div class="stack" style="margin-top: 16px">
+          <button
+            class="btn btn-icon"
+            id="backFromSettings"
+            title="Back to timer list"
+            aria-label="Back to timer list"
+          >
+            <span>←</span>
+          </button>
+          <div class="card stack">
+            <div class="section-title">Preferences</div>
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 12px">
+              <label class="row"
+                ><input type="checkbox" id="prefSpeak" />
+                <span>Speak block changes</span></label
+              >
+              <label class="row"
+                ><input type="checkbox" id="prefVibrate" />
+                <span>Vibrate on change</span></label
+              >
+              <label class="row"
+                ><input type="checkbox" id="prefWake" />
+                <span>Prevent screen sleep while running</span></label
+              >
+              <div class="row">
+                <label for="prefTheme" class="sr-only">Theme</label>
+                <select id="prefTheme">
+                  <option value="system">Theme: System</option>
+                  <option value="light">Theme: Light (Gruvbox)</option>
+                  <option value="dark">Theme: Dark (Gruvbox)</option>
+                  <option value="nord">Theme: Nord Dark</option>
+                  <option value="nord-light">Theme: Nord Light</option>
+                  <option value="dracula">Theme: Dracula</option>
+                  <option value="tokyo-night">Theme: Tokyo Night</option>
+                  <option value="high-contrast-dark">
+                    Theme: High Contrast Dark
+                  </option>
+                  <option value="high-contrast-light">
+                    Theme: High Contrast Light
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="card stack">
+            <div class="section-title">Import / Export</div>
+            <div class="toolbar">
+              <button class="btn" id="exportBtn">Export Timers (JSON)</button>
+              <input
+                class="btn"
+                type="file"
+                id="importFile"
+                accept="application/json"
+              />
+            </div>
+            <div class="muted small">
+              Back up or share your timers. Import validates and merges by ID.
+            </div>
+          </div>
+          <div class="card stack">
+            <div class="section-title">Account & Sync</div>
+            <div id="authStatus" class="muted small">
+              Sign in to sync your timers across devices
+            </div>
+            <div class="toolbar">
+              <button class="btn" id="syncNowBtn" style="display: none">
+                Sync Now
+              </button>
+              <button class="btn" id="authActionBtn">
+                Sign In with Google
+              </button>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- Grid Area: Actions -->
-        <div class="onboarding-actions">
-          <button class="btn primary" id="onboarding-finish">Start Using Time Box</button>
-        </div>
-      </div>
-    </section>
+      <div
+        id="liveRegion"
+        class="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+      ></div>
+    </div>
 
-    <!-- Page: Settings -->
-    <section id="page-settings" class="page">
-      <div class="stack" style="margin-top:16px">
-        <button class="btn btn-icon" id="backFromSettings" title="Back to timer list" aria-label="Back to timer list">
-          <span>←</span>
-        </button>
-        <div class="card stack">
-          <div class="section-title">Preferences</div>
-          <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
-            <label class="row"><input type="checkbox" id="prefSpeak"/> <span>Speak block changes</span></label>
-            <label class="row"><input type="checkbox" id="prefVibrate"/> <span>Vibrate on change</span></label>
-            <label class="row"><input type="checkbox" id="prefWake"/> <span>Prevent screen sleep while running</span></label>
-            <div class="row"><label for="prefTheme" class="sr-only">Theme</label>
-              <select id="prefTheme">
-                <option value="system">Theme: System</option>
-                <option value="light">Theme: Light (Gruvbox)</option>
-                <option value="dark">Theme: Dark (Gruvbox)</option>
-                <option value="nord">Theme: Nord Dark</option>
-                <option value="nord-light">Theme: Nord Light</option>
-                <option value="dracula">Theme: Dracula</option>
-                <option value="tokyo-night">Theme: Tokyo Night</option>
-                <option value="high-contrast-dark">Theme: High Contrast Dark</option>
-                <option value="high-contrast-light">Theme: High Contrast Light</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="card stack">
-          <div class="section-title">Import / Export</div>
-          <div class="toolbar">
-            <button class="btn" id="exportBtn">Export Timers (JSON)</button>
-            <input class="btn" type="file" id="importFile" accept="application/json" />
-          </div>
-          <div class="muted small">Back up or share your timers. Import validates and merges by ID.</div>
-        </div>
-        <div class="card stack">
-          <div class="section-title">Account & Sync</div>
-          <div id="authStatus" class="muted small">Sign in to sync your timers across devices</div>
-          <div class="toolbar">
-            <button class="btn" id="syncNowBtn" style="display:none">Sync Now</button>
-            <button class="btn" id="authActionBtn">Sign In with Google</button>
-          </div>
-        </div>
-      </div>
-    </section>
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
+      import {
+        getAuth,
+        GoogleAuthProvider,
+        signInWithPopup,
+        signOut,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        collection,
+        getDocs,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-    <div id="liveRegion" class="sr-only" aria-live="polite" aria-atomic="true"></div>
-  </div>
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyDLqaK8HtwUWCVMvtg7GgwgGXyv4i0_zP0",
+        authDomain: "color-block-timer.firebaseapp.com",
+        projectId: "color-block-timer",
+        storageBucket: "color-block-timer.firebasestorage.app",
+        messagingSenderId: "930168399039",
+        appId: "1:930168399039:web:18d886fcd7f7912fa3920a",
+        measurementId: "G-9YZ0C829CY",
+      };
 
-  <script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
 
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyDLqaK8HtwUWCVMvtg7GgwgGXyv4i0_zP0",
-      authDomain: "color-block-timer.firebaseapp.com",
-      projectId: "color-block-timer",
-      storageBucket: "color-block-timer.firebasestorage.app",
-      messagingSenderId: "930168399039",
-      appId: "1:930168399039:web:18d886fcd7f7912fa3920a",
-      measurementId: "G-9YZ0C829CY"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // Make Firebase available globally for the main app
-    window.firebaseApp = { app, auth, db, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, doc, getDoc, setDoc, collection, getDocs, serverTimestamp };
-  </script>
-<script src="app.js"></script>
-</body>
+      // Make Firebase available globally for the main app
+      window.firebaseApp = {
+        app,
+        auth,
+        db,
+        GoogleAuthProvider,
+        signInWithPopup,
+        signOut,
+        onAuthStateChanged,
+        doc,
+        getDoc,
+        setDoc,
+        collection,
+        getDocs,
+        serverTimestamp,
+      };
+    </script>
+    <script src="app.js"></script>
+  </body>
 </html>
-
