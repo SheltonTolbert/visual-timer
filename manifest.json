@@ -1,0 +1,51 @@
+{
+  "name": "Time Box",
+  "short_name": "Time Box",
+  "description": "Visual timer app with customizable time blocks and color changes. Perfect for Pomodoro, workouts, presentations, and timed activities.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#282828",
+  "theme_color": "#83a598",
+  "orientation": "portrait-primary",
+  "scope": "./",
+  "lang": "en",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Timer",
+      "short_name": "Add",
+      "description": "Create a new timer",
+      "url": "./#/edit",
+      "icons": [
+        {
+          "src": "favicon-32x32.png",
+          "sizes": "32x32"
+        }
+      ]
+    }
+  ]
+}
