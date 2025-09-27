@@ -1169,7 +1169,7 @@
             <span>≅</span>
           </button>
           <button
-            class="btn btn-icon"
+            class="hidden"
             id="installBtn"
             title="Install app (PWA)"
             aria-label="Install app"
@@ -1476,6 +1476,17 @@
                   </option>
                 </select>
               </div>
+            </div>
+          </div>
+          <div class="card stack">
+            <div class="section-title">App Installation</div>
+            <div id="installStatus" class="muted small">
+              Install Time Box as an app for quick access and offline use.
+            </div>
+            <div class="toolbar">
+              <button class="btn" id="settingsInstallBtn" style="display: none">
+                Install App
+              </button>
             </div>
           </div>
           <div class="card stack">

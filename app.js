@@ -965,18 +965,77 @@
 
   // PWA install prompt (optional best-effort)
   let deferredPrompt = null;
+  let isAppInstalled = false;
+
+  // Check if app is already installed
+  window.addEventListener('appinstalled', () => {
+    console.log('App was installed');
+    isAppInstalled = true;
+    updateInstallUI();
+  });
+
+  // Check if running as PWA
+  function isPWA() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true;
+  }
+
+  function updateInstallUI() {
+    const headerInstallBtn = byId("installBtn");
+    const settingsInstallBtn = byId("settingsInstallBtn");
+    const installStatus = byId("installStatus");
+
+    if (isPWA() || isAppInstalled) {
+      // App is already installed
+      if (headerInstallBtn) headerInstallBtn.hidden = true;
+      if (settingsInstallBtn) settingsInstallBtn.style.display = "none";
+      if (installStatus) installStatus.textContent = "✅ Time Box is installed as an app!";
+    } else if (deferredPrompt) {
+      // Can install
+      if (headerInstallBtn) headerInstallBtn.hidden = false;
+      if (settingsInstallBtn) settingsInstallBtn.style.display = "inline-block";
+      if (installStatus) installStatus.textContent = "Install Time Box as an app for quick access and offline use.";
+    } else {
+      // Cannot install (unsupported browser or other reasons)
+      if (headerInstallBtn) headerInstallBtn.hidden = true;
+      if (settingsInstallBtn) settingsInstallBtn.style.display = "none";
+      if (installStatus) installStatus.textContent = "App installation not available in this browser.";
+    }
+  }
+
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    byId("installBtn").hidden = false;
+    updateInstallUI();
   });
-  byId("installBtn").onclick = async () => {
+
+  async function installApp() {
+    if (!deferredPrompt) return;
+
     try {
       await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+
+      if (outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+        isAppInstalled = true;
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+
+      deferredPrompt = null;
+      updateInstallUI();
     } catch (e) {
-      console.log(e);
+      console.log('Install error:', e);
     }
-  };
+  }
+
+  // Bind both install buttons
+  byId("installBtn").onclick = installApp;
+  byId("settingsInstallBtn").onclick = installApp;
+
+  // Update UI on page load
+  setTimeout(updateInstallUI, 100);
 
   // -------- Onboarding --------
   let currentOnboardingStep = 1;
