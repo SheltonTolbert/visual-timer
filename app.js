@@ -276,9 +276,6 @@
 
   // -------- Router --------
   function go(page, id){
-    console.log('go() called with:', page, id);
-    console.trace('go() stack trace');
-    state.route = { page, id: id||null };
     location.hash = '#/'+page + (id?('/'+id):'');
   }
   function parseHash(){ const h = location.hash.slice(2).split('/'); const page = h[0]||'list'; const id = h[1]||null; return { page, id } }
@@ -357,7 +354,14 @@
     byId('addBlockBtn').onclick = ()=>{ updateFromRows(timer); timer.blocks.push({ atSeconds: getTotalSeconds(timer.blocks)+60, colorHex:'#5b8cff', label: byId('defaultLabel').value||'' }); renderEdit(timer.id); };
     byId('sortBlocksBtn').onclick = ()=>{ updateFromRows(timer); timer.blocks.sort((a,b)=>a.atSeconds-b.atSeconds); renderEdit(timer.id); };
     byId('validateBtn').onclick = ()=>{ updateFromRows(timer); const v = validateTimer(timer); const msg = byId('validateMsg'); msg.textContent = v.ok? 'Looks good ✅' : v.errors.join(' '); msg.className = 'small ' + (v.ok? 'ok':'error'); };
-    byId('saveTimerBtn').onclick = ()=>{ updateFromRows(timer); const v = validateTimer(timer); if(!v.ok){ alert('Fix errors before saving:\n'+v.errors.join('\n')); return; } saveTimer(timer); go('list'); };
+    byId('saveTimerBtn').onclick = ()=>{
+      updateFromRows(timer);
+      timer.name = byId('timerName').value;
+      const v = validateTimer(timer);
+      if(!v.ok){
+        alert('Fix errors before saving:\n'+v.errors.join('\n'));
+        return;
+      } saveTimer(timer); go('list'); };
     byId('deleteTimerBtn').onclick = ()=>{ if (confirm('Delete this timer?')){ state.timers = state.timers.filter(x=>x.id!==id); saveTimers(state.timers);
     try{ delete drafts[timer.id]; }catch{} go('list'); } };
     byId('backFromEdit').onclick = ()=> go('list');
@@ -581,8 +585,17 @@
     saveTimer(t); go('list');
   };
 
-  byId('settingsBtn').onclick = ()=> go('settings');
-  byId('backFromSettings').onclick = ()=> go('list');
+  // In-memory settings functions
+  function showSettings(){
+    byId('page-settings').classList.add('active');
+    loadPrefControls();
+  }
+  function hideSettings(){
+    byId('page-settings').classList.remove('active');
+  }
+
+  byId('settingsBtn').onclick = showSettings;
+  byId('backFromSettings').onclick = hideSettings;
 
   // Preferences
   function loadPrefControls(){
@@ -617,8 +630,13 @@
 
 
   // PWA install prompt (optional best-effort)
-  let deferredPrompt=null; window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; byId('installBtn').hidden=false; });
-  byId('installBtn').onclick = async ()=>{ try{ await deferredPrompt.prompt(); }catch{} };
+  let deferredPrompt=null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt=e;
+    byId('installBtn').hidden=false;
+  });
+  byId('installBtn').onclick = async ()=>{ try{ await deferredPrompt.prompt(); }catch(e){console.log(e)} };
 
   // -------- Onboarding --------
   let currentOnboardingStep = 1;
@@ -685,6 +703,47 @@
     go('list');
   }
 
+  // -------- Page rendering configuration --------
+  const pageConfig = {
+    'onboarding': {
+      shouldShow: () => !state.prefs.onboarded,
+      forceHide: () => state.prefs.onboarded
+    },
+    'list': {
+      shouldShow: () => state.prefs.onboarded,
+      forceHide: () => !state.prefs.onboarded
+    },
+    'edit': {
+      shouldShow: () => state.prefs.onboarded,
+      forceHide: () => !state.prefs.onboarded
+    },
+    'run': {
+      shouldShow: () => state.prefs.onboarded,
+      forceHide: () => !state.prefs.onboarded
+    },
+    'settings': {
+      shouldShow: () => state.prefs.onboarded,
+      forceHide: () => !state.prefs.onboarded
+    }
+  };
+
+  function applyPageVisibility() {
+    Object.keys(pageConfig).forEach(pageId => {
+      const page = byId(`page-${pageId}`);
+      if (!page) return;
+
+      const config = pageConfig[pageId];
+      if (config.forceHide()) {
+        page.style.display = 'none';
+        page.classList.remove('active');
+      } else {
+        // Remove inline display style to let CSS classes control visibility
+        page.style.display = '';
+        // Don't add 'active' class here - let the show() function handle that
+      }
+    });
+  }
+
   // -------- Page switcher --------
   let isShowingPage = false;
   function show(pageId){
@@ -715,19 +774,15 @@
   }
 
   function render(){
+    // Apply page visibility rules based on configuration
+    applyPageVisibility();
+
     // If user is not onboarded, ONLY show onboarding and exit
     if (!state.prefs.onboarded) {
-      // Completely reset all page visibility
-      $$('.page').forEach(p => {
-        p.classList.remove('active');
-        p.style.display = 'none !important';
-      });
-
       // Show only onboarding page
       const onboardingPage = byId('page-onboarding');
       onboardingPage.classList.add('active');
       onboardingPage.style.display = 'block';
-      onboardingPage.style.visibility = 'visible';
 
       // Initialize onboarding
       initOnboarding();
@@ -735,12 +790,6 @@
       // Prevent any further render logic
       return;
     }
-
-    // Reset any onboarding-specific styling for onboarded users
-    $$('.page').forEach(p => {
-      p.style.display = '';
-      p.style.visibility = '';
-    });
 
     // Normal render logic for onboarded users
     state.route = parseHash();
@@ -753,7 +802,6 @@
       const t = state.timers.find(x=>x.id===state.route.id); if(!t){ alert('Timer not found'); go('list'); return; }
       show('run'); byId('runRoot').style.background = normalizeHex(t.blocks[0]?.colorHex||'#000'); byId('runTitle').textContent = t.name; byId('runInfo').textContent='Ready';
     }
-    else if(state.route.page==='settings'){ show('settings'); loadPrefControls(); }
     else { go('list'); }
   }
 

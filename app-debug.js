@@ -1,1 +1,0 @@
-alert('Basic module test - this alert should appear');

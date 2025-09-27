@@ -40,14 +40,20 @@
     }
     html,body{height:100%}
     body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji"}
-    .app{max-width:960px;margin:0 auto;padding:16px}
+
+    .app{
+      max-width:960px;
+      max-height: 100vh;
+      margin:0 auto;
+      padding:16px
+    }
+
     header{display:flex;align-items:center;gap:12px;justify-content:space-between;min-height:60px}
     h1{font-size:1.25rem;margin:0;flex:1}
     .muted{color:var(--muted)}
 
     /* Icon buttons */
     .btn-icon{
-      width:44px;
       height:44px;
       display:flex;
       align-items:center;
@@ -74,7 +80,7 @@
     @media (max-width:480px){
       header{gap:8px}
       h1{font-size:1.1rem}
-      .btn-icon{width:40px;height:40px;font-size:1.1rem}
+      .btn-icon{height:40px;font-size:1.1rem}
     }
     .btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--fg);padding:10px 14px;border-radius:12px;cursor:pointer}
     .btn.primary{background:var(--accent);border-color:transparent;color:white}
@@ -92,7 +98,7 @@
     input[type="color"]{width:44px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;padding:0}
     .small{font-size:.9rem}
     .right{margin-left:auto}
-    .section-title{font-weight:700;font-size:1rem;margin:8px 0}
+    .section-title{font-weight:700;font-size:1rem;margin:8px 0; color: var(--fg);}
     .error{color:var(--danger)}
     .ok{color:var(--ok)}
     .pill{font-size:.8rem;background:var(--bg);border:1px solid var(--border);padding:4px 8px;border-radius:999px;color:var(--fg)}
@@ -107,7 +113,7 @@
     .run-info{position:fixed;left:10px;bottom:10px;background:rgba(0,0,0,.35);backdrop-filter:blur(8px);padding:10px 14px;border-radius:12px;font-weight:600}
 
     /* Simple tabs/pages */
-    .page{display:none}
+    .page{display:none; padding: 0 1rem;}
     .page.active{display:block}
 
     /* Completely hide list page during onboarding */
@@ -470,10 +476,8 @@
 
       /* Onboarding flex column layout */
       #page-onboarding{
-        display:flex !important;
+        display:flex;
         flex-direction:column !important;
-        height:100vh !important;
-        width:100% !important;
         overflow:hidden !important;
       }
 
@@ -754,13 +758,13 @@
       <h1>Time Box</h1>
       <nav class="toolbar" aria-label="Top toolbar">
         <button class="btn btn-icon" id="authBtn" title="Sign in with Google" aria-label="Sign in with Google">
-          <span>👤</span>
+          <span>≅</span>
         </button>
         <button class="btn btn-icon" id="installBtn" title="Install app (PWA)" aria-label="Install app" hidden>
-          <span>📱</span>
+          <span>Install</span>
         </button>
         <button class="btn btn-icon" id="settingsBtn" title="Settings" aria-label="Settings">
-          <span>⚙️</span>
+          <span>⚙︎</span>
         </button>
       </nav>
     </header>
@@ -852,17 +856,14 @@
         <div class="onboarding-content-area">
           <div class="features-grid">
             <div class="feature">
-              <div class="feature-icon">⏱️</div>
               <h3>Create Custom Timers</h3>
               <p>Build timers with time blocks that change at specific times. Perfect for Pomodoro, workouts, presentations, or any timed activity.</p>
             </div>
             <div class="feature">
-              <div class="feature-icon">🎨</div>
               <h3>Visual Time Blocks</h3>
               <p>Each timer shows different colors at different times. Green for focus, yellow for break, red for finish - you decide!</p>
             </div>
             <div class="feature">
-              <div class="feature-icon">📱</div>
               <h3>Full-Screen Experience</h3>
               <p>Run timers in full-screen mode with large, clear color displays. Great for visibility across rooms or during presentations.</p>
             </div>
