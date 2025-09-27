@@ -4,6 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Time Box</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="favicon-192x192.png">
+  <link rel="manifest" href="manifest.json">
   <style>
     :root{
       /* Gruvbox Material Dark Theme */
@@ -48,7 +55,15 @@
       padding:16px
     }
 
-    header{display:flex;align-items:center;gap:12px;justify-content:space-between;min-height:60px}
+    header{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      justify-content:
+      space-between;
+      min-height:60px;
+      padding:12px 16px !important;
+    }
     h1{font-size:1.25rem;margin:0;flex:1}
     .muted{color:var(--muted)}
 
@@ -740,6 +755,10 @@
         margin: 0.5rem 0;
         line-height: 1.4;
       }
+
+      .hidden {
+        display: none !important;
+      }
     }
   </style>
 </head>
@@ -760,7 +779,7 @@
         <button class="btn btn-icon" id="authBtn" title="Sign in with Google" aria-label="Sign in with Google">
           <span>≅</span>
         </button>
-        <button class="btn btn-icon" id="installBtn" title="Install app (PWA)" aria-label="Install app" hidden>
+        <button class="btn btn-icon hidden" id="installBtn" title="Install app (PWA)" aria-label="Install app" hidden>
           <span>Install</span>
         </button>
         <button class="btn btn-icon" id="settingsBtn" title="Settings" aria-label="Settings">
@@ -833,8 +852,7 @@
             <div id="runTitle" class="pill"></div>
           </div>
           <div class="run-panel">
-            <button class="btn" id="startBtn">Start</button>
-            <button class="btn" id="pauseBtn">Pause</button>
+            <button class="btn" id="toggleBtn">Start</button>
             <button class="btn" id="resetBtn">Reset</button>
             <button class="btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
           </div>
@@ -933,7 +951,6 @@
         <div class="onboarding-actions">
           <button class="btn primary" id="onboarding-finish">Start Using Time Box</button>
         </div>
-      </div>
       </div>
     </section>
 

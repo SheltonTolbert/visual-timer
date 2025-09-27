@@ -58,7 +58,7 @@
       syncToFirestore();
     }
   }
-  function loadPrefs(){ const d = { speak:true, vibrate:false, wake:true, theme:'system', onboarded:false }; try { return Object.assign(d, JSON.parse(localStorage.getItem(LS_PREFS)||'{}')); } catch { return d; } }
+  function loadPrefs(){ const d = { speak:false, vibrate:false, wake:true, theme:'system', onboarded:false }; try { return Object.assign(d, JSON.parse(localStorage.getItem(LS_PREFS)||'{}')); } catch { return d; } }
   function savePrefs(p){
     localStorage.setItem(LS_PREFS, JSON.stringify(p));
     // Auto-sync to Firestore if user is signed in
@@ -347,6 +347,12 @@
     const timer = getOrCreateDraft(id);
     byId('timerName').value = timer.name || '';
     byId('deleteTimerBtn').style.display = state.timers.some(x=>x.id===id)? 'inline-block':'none';
+
+    // Save timer name when input loses focus
+    byId('timerName').onblur = () => {
+      timer.name = byId('timerName').value;
+      timer.updatedAt = now();
+    };
     // Render rows
     const blocksEl = byId('blocks'); blocksEl.innerHTML='';
     timer.blocks.forEach((b, idx)=> blocksEl.appendChild(blockRow(b, idx, id)) );
@@ -537,7 +543,7 @@
       const root = byId('runRoot');
       root.style.background = normalizeHex(b.colorHex);
       const title = byId('runTitle');
-      title.textContent = `${t.name||'Timer'} — ${b.label||''}`.trim();
+      title.textContent = `${t.name||'Timer'}`.trim();
       const say = b.label || `Change`; speak(say); vibrate([120,60,120]); live(`Block: ${say}`);
       updateRunUI(t);
     }
@@ -550,13 +556,24 @@
       let next = total; for(let i=0;i<blocks.length;i++){ if(blocks[i].atSeconds>elapsed){ next = blocks[i].atSeconds; break; } }
       const remainingToNext = Math.max(0, Math.floor(next - elapsed));
       byId('runInfo').textContent = `Elapsed ${secondsToHMS(elapsed)} • Next change in ${secondsToHMS(remainingToNext)} • Total ${secondsToHMS(total)}`;
+      updateToggleButton();
     }
 
-    function start(t){ activeId = t.id; startMs = now(); pausedAt = 0; scheduleNext(t); requestWake(); }
-    function pause(){ if(pausedAt) return; pausedAt = now(); clearTimers(); releaseWake(); byId('runInfo').textContent='Paused'; live('Paused'); }
-    function resume(t){ if(!pausedAt) return; const pausedDur = now()-pausedAt; startMs += pausedDur; pausedAt = 0; scheduleNext(t); requestWake(); }
-    function reset(t){ clearTimers(); startMs = now(); pausedAt = 0; currentIdx = 0; applyBlock(t.blocks[0], t); updateRunUI(t); releaseWake(); }
-    function done(t){ clearTimers(); speak('Done'); vibrate([200,100,200,100,200]); live('Timer finished'); releaseWake(); }
+    function updateToggleButton(){
+      const toggleBtn = byId('toggleBtn');
+      if(!toggleBtn) return;
+      if(isRunning()){
+        toggleBtn.textContent = 'Pause';
+      } else {
+        toggleBtn.textContent = 'Start';
+      }
+    }
+
+    function start(t){ activeId = t.id; startMs = now(); pausedAt = 0; scheduleNext(t); requestWake(); updateToggleButton(); }
+    function pause(){ if(pausedAt) return; pausedAt = now(); clearTimers(); releaseWake(); live('Paused'); updateToggleButton(); }
+    function resume(t){ if(!pausedAt) return; const pausedDur = now()-pausedAt; startMs += pausedDur; pausedAt = 0; scheduleNext(t); requestWake(); updateToggleButton(); }
+    function reset(t){ clearTimers(); startMs = now(); pausedAt = 0; currentIdx = 0; applyBlock(t.blocks[0], t); updateRunUI(t); releaseWake(); updateToggleButton(); }
+    function done(t){ clearTimers(); speak('Done'); vibrate([200,100,200,100,200]); live('Timer finished'); releaseWake(); updateToggleButton(); }
 
     function getElapsedMs(){ return Math.max(0, (pausedAt||now()) - startMs); }
     function getElapsed(){ return Math.floor(getElapsedMs()/1000); }
@@ -565,11 +582,21 @@
     // visibility handling to re-acquire wake lock
     document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && activeId && !pausedAt){ requestWake(); } });
 
+    function stop(){
+      clearTimers();
+      releaseWake();
+      activeId = null;
+      pausedAt = 0;
+      startMs = 0;
+      currentIdx = 0;
+      updateToggleButton();
+    }
+
     function isRunning(){ return !!activeId && !pausedAt; }
     function isPaused(){ return !!activeId && !!pausedAt; }
     function toggle(t){ if(!activeId){ start(t); } else if(pausedAt){ resume(t); } else { pause(); } }
 
-    return { start, pause, resume, reset };
+    return { start, pause, resume, reset, stop, toggle, updateToggleButton };
   })();
 
   // -------- Event wiring --------
@@ -587,11 +614,11 @@
 
   // In-memory settings functions
   function showSettings(){
-    byId('page-settings').classList.add('active');
+    show('settings');
     loadPrefControls();
   }
   function hideSettings(){
-    byId('page-settings').classList.remove('active');
+    show('list');
   }
 
   byId('settingsBtn').onclick = showSettings;
@@ -615,9 +642,8 @@
   $$('#prefSpeak, #prefVibrate, #prefWake, #prefTheme').forEach(el=> el.addEventListener('change', savePrefControls));
 
   // Run page controls
-  byId('backFromRun').onclick = ()=> go('list');
-  byId('startBtn').onclick = ()=>{ const t = state.timers.find(x=>x.id===state.route.id); if(!t) return; Engine.start(t); };
-  byId('pauseBtn').onclick = ()=>{ Engine.pause(); };
+  byId('backFromRun').onclick = ()=> { Engine.stop(); go('list'); };
+  byId('toggleBtn').onclick = ()=>{ const t = state.timers.find(x=>x.id===state.route.id); if(!t) return; Engine.toggle(t); };
   byId('resetBtn').onclick = ()=>{ const t = state.timers.find(x=>x.id===state.route.id); if(!t) return; Engine.reset(t); };
   byId('fullscreenBtn').onclick = ()=>{ const el = byId('runRoot'); if(document.fullscreenElement){ document.exitFullscreen(); } else { el.requestFullscreen?.(); } };
 
@@ -800,7 +826,7 @@
     else if(state.route.page==='edit'){ show('edit'); renderEdit(state.route.id); }
     else if(state.route.page==='run'){
       const t = state.timers.find(x=>x.id===state.route.id); if(!t){ alert('Timer not found'); go('list'); return; }
-      show('run'); byId('runRoot').style.background = normalizeHex(t.blocks[0]?.colorHex||'#000'); byId('runTitle').textContent = t.name; byId('runInfo').textContent='Ready';
+      show('run'); byId('runRoot').style.background = normalizeHex(t.blocks[0]?.colorHex||'#000'); byId('runTitle').textContent = t.name; byId('runInfo').textContent='Ready'; Engine.updateToggleButton();
     }
     else { go('list'); }
   }
