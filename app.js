@@ -111,7 +111,7 @@
       vibrate: false,
       wake: true,
       theme: "system",
-      onboarded: false,
+      onboarded: true,
     };
     try {
       return Object.assign(
