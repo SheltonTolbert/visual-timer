@@ -13,6 +13,18 @@
     <link rel="manifest" href="manifest.json" />
     <style>
       :root {
+        /* Material Design Light Theme - High Contrast for Accessibility */
+        --bg: #ffffff;
+        --fg: #1a1a1a;
+        --muted: #5f6368;
+        --card: #f8f9fa;
+        --accent: #1a73e8;
+        --danger: #d93025;
+        --ok: #137333;
+        --focus: #ea8600;
+        --border: #dadce0;
+      }
+      [data-theme="gruvbox-dark"] {
         /* Gruvbox Material Dark Theme */
         --bg: #282828;
         --fg: #fbf1c7;
@@ -24,7 +36,7 @@
         --focus: #fabd2f;
         --border: #504945;
       }
-      [data-theme="light"] {
+      [data-theme="gruvbox-light"] {
         /* Gruvbox Material Light Theme */
         --bg: #fbf1c7;
         --fg: #282828;
@@ -696,6 +708,14 @@
       }
 
       /* Theme preview colors */
+      .material-light {
+        background: linear-gradient(
+          135deg,
+          #ffffff 0%,
+          #f8f9fa 50%,
+          #1a73e8 100%
+        );
+      }
       .gruvbox-dark {
         background: linear-gradient(
           135deg,
@@ -1169,15 +1189,6 @@
             <span>≅</span>
           </button>
           <button
-            class="hidden"
-            id="installBtn"
-            title="Install app (PWA)"
-            aria-label="Install app"
-            hidden
-          >
-            <span>Install</span>
-          </button>
-          <button
             class="btn btn-icon"
             id="settingsBtn"
             title="Settings"
@@ -1461,9 +1472,9 @@
               <div class="row">
                 <label for="prefTheme" class="sr-only">Theme</label>
                 <select id="prefTheme">
-                  <option value="system">Theme: System</option>
-                  <option value="light">Theme: Light (Gruvbox)</option>
-                  <option value="dark">Theme: Dark (Gruvbox)</option>
+                  <option value="material-light">Theme: Material Light (Default)</option>
+                  <option value="gruvbox-dark">Theme: Gruvbox Dark</option>
+                  <option value="gruvbox-light">Theme: Gruvbox Light</option>
                   <option value="nord">Theme: Nord Dark</option>
                   <option value="nord-light">Theme: Nord Light</option>
                   <option value="dracula">Theme: Dracula</option>

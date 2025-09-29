@@ -110,7 +110,7 @@
       speak: false,
       vibrate: false,
       wake: true,
-      theme: "system",
+      theme: "material-light",
       onboarded: true,
     };
     try {
@@ -366,8 +366,9 @@
 
   // -------- Render --------
   function setTheme(theme) {
-    const t = theme || state.prefs.theme || "system";
-    if (t === "system") {
+    const t = theme || state.prefs.theme || "material-light";
+    if (t === "material-light") {
+      // Material Light is the default - use :root styles
       document.documentElement.removeAttribute("data-theme");
     } else {
       document.documentElement.setAttribute("data-theme", t);
@@ -917,7 +918,7 @@
     byId("prefSpeak").checked = !!state.prefs.speak;
     byId("prefVibrate").checked = !!state.prefs.vibrate;
     byId("prefWake").checked = !!state.prefs.wake;
-    byId("prefTheme").value = state.prefs.theme || "system";
+    byId("prefTheme").value = state.prefs.theme || "material-light";
   }
   function savePrefControls() {
     state.prefs.speak = byId("prefSpeak").checked;
@@ -981,23 +982,19 @@
   }
 
   function updateInstallUI() {
-    const headerInstallBtn = byId("installBtn");
     const settingsInstallBtn = byId("settingsInstallBtn");
     const installStatus = byId("installStatus");
 
     if (isPWA() || isAppInstalled) {
       // App is already installed
-      if (headerInstallBtn) headerInstallBtn.hidden = true;
       if (settingsInstallBtn) settingsInstallBtn.style.display = "none";
       if (installStatus) installStatus.textContent = "✅ Time Box is installed as an app!";
     } else if (deferredPrompt) {
       // Can install
-      if (headerInstallBtn) headerInstallBtn.hidden = false;
       if (settingsInstallBtn) settingsInstallBtn.style.display = "inline-block";
       if (installStatus) installStatus.textContent = "Install Time Box as an app for quick access and offline use.";
     } else {
       // Cannot install (unsupported browser or other reasons)
-      if (headerInstallBtn) headerInstallBtn.hidden = true;
       if (settingsInstallBtn) settingsInstallBtn.style.display = "none";
       if (installStatus) installStatus.textContent = "App installation not available in this browser.";
     }
@@ -1031,7 +1028,6 @@
   }
 
   // Bind both install buttons
-  byId("installBtn").onclick = installApp;
   byId("settingsInstallBtn").onclick = installApp;
 
   // Update UI on page load
